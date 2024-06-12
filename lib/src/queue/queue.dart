@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_pgmq/src/message/message.dart';
+import 'package:pausable_timer/pausable_timer.dart';
 import 'package:postgres/postgres.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
@@ -46,5 +47,13 @@ abstract class Queue {
 
   Future<void> dispose();
 
-  Stream<Message> pull({required Duration duration, bool useReadMethod = true});
+  Stream<Message> pull(
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true});
+
+  (PausableTimer, Stream<Message>) pausablePull(
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true});
 }

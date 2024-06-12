@@ -48,12 +48,14 @@ class _QueuePostgresql2Impl implements Queue {
 
   @override
   Stream<Message> pull(
-      {required Duration duration, bool useReadMethod = true}) {
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true}) {
     final stream = StreamController<Message>();
     controllers.add(stream);
     Timer.periodic(duration, (_) async {
       final message = useReadMethod
-          ? await read(visibilityTimeOut: duration)
+          ? await read(visibilityTimeOut: visibilityDuration)
           : [await pop()];
       if (message != null && message.isNotEmpty) {
         stream.add(message.first!);
@@ -110,5 +112,25 @@ class _QueuePostgresql2Impl implements Queue {
 
     final data = await _connection.query(query, values).toList();
     return int.parse(data.first.toMap()['purge_queue'].toString());
+  }
+
+  @override
+  (PausableTimer, Stream<Message>) pausablePull(
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true}) {
+    final stream = StreamController<Message>();
+    controllers.add(stream);
+
+    final pausableTimer = PausableTimer.periodic(duration, () async {
+      final message = useReadMethod
+          ? await read(visibilityTimeOut: visibilityDuration)
+          : [await pop()];
+      if (message != null && message.isNotEmpty) {
+        stream.add(message.first!);
+      }
+    });
+
+    return (pausableTimer, stream.stream);
   }
 }

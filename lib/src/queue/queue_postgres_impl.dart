@@ -57,11 +57,13 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Stream<Message> pull(
-      {required Duration duration, bool useReadMethod = true}) {
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true}) {
     final stream = StreamController<Message>();
     Timer.periodic(duration, (_) async {
       final message = useReadMethod
-          ? await read(visibilityTimeOut: duration)
+          ? await read(visibilityTimeOut: visibilityDuration)
           : [await pop()];
       if (message != null && message.isNotEmpty) {
         stream.add(message.first!);
@@ -108,5 +110,25 @@ class _QueuePostgresImpl implements Queue {
   @override
   Future<int> purgeQueue() {
     throw UnimplementedError();
+  }
+
+  @override
+  (PausableTimer, Stream<Message>) pausablePull(
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true}) {
+    final stream = StreamController<Message>();
+    controllers.add(stream);
+
+    final pausableTimer = PausableTimer.periodic(duration, () async {
+      final message = useReadMethod
+          ? await read(visibilityTimeOut: visibilityDuration)
+          : [await pop()];
+      if (message != null && message.isNotEmpty) {
+        stream.add(message.first!);
+      }
+    });
+
+    return (pausableTimer, stream.stream);
   }
 }
