@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dart_pgmq/src/message/message.dart';
 import 'package:postgres/postgres.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
@@ -8,7 +9,7 @@ part 'queue_postgres_impl.dart';
 part 'queue_postgresql2_impl.dart';
 
 abstract class Queue {
-  StreamController<Map<dynamic, dynamic>> get controller;
+  StreamController<Message> get controller;
 
   factory Queue.uingPostgresql2(
           postgresql2.Connection connection, String queueName) =>
@@ -20,11 +21,10 @@ abstract class Queue {
   /// Send message to the queue
   Future<int> send(Map<String, dynamic> payload);
 
-  Future<Map<dynamic, dynamic>?> read(
-      {int? messageID, Duration? visibilityTimeOut});
+  Future<Message?> read({int? messageID, Duration? visibilityTimeOut});
 
   /// Remove message from queue
-  Future<Map<dynamic, dynamic>?> pop();
+  Future<Message?> pop();
 
   /// [messageID] : archivre message id
   Future<int> archive(int messageID);
@@ -36,5 +36,5 @@ abstract class Queue {
 
   Future<void> dispose();
 
-  Stream<Map<dynamic, dynamic>> pull({required Duration duration});
+  Stream<Message> pull({required Duration duration});
 }

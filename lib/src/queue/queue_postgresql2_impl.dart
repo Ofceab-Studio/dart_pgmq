@@ -3,10 +3,10 @@ part of 'queue.dart';
 class _QueuePostgresql2Impl implements Queue {
   final postgresql2.Connection _connection;
   final String _queueName;
+  final MessageParser _messageParser = MessageParser();
 
   @override
-  final StreamController<Map<dynamic, dynamic>> controller =
-      StreamController.broadcast();
+  final StreamController<Message> controller = StreamController.broadcast();
 
   _QueuePostgresql2Impl(this._connection, this._queueName);
 
@@ -37,17 +37,17 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> pop() async {
-    final query = "SELECT pgmq.pop(@a);";
-    final data = await _connection.query(query, {'a': _queueName}).toList();
+  Future<Message?> pop() async {
+    final query = "SELECT pgmq.pop(@queue);";
+    final data = await _connection.query(query, {'queue': _queueName}).toList();
     if (data.isNotEmpty) {
-      return data.first.toMap();
+      return _messageParser.messageFromPull(data.first.toMap());
     }
     return null;
   }
 
   @override
-  Stream<Map<dynamic, dynamic>> pull({required Duration duration}) {
+  Stream<Message> pull({required Duration duration}) {
     Timer.periodic(duration, (_) async {
       final message = await pop();
       if (message != null) {
@@ -58,8 +58,7 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Future<Map<dynamic, dynamic>?> read(
-      {int? messageID, Duration? visibilityTimeOut}) async {
+  Future<Message?> read({int? messageID, Duration? visibilityTimeOut}) async {
     final vt = visibilityTimeOut ?? Duration(seconds: 10);
     if (messageID == null) {
       return await pop();
@@ -68,7 +67,7 @@ class _QueuePostgresql2Impl implements Queue {
     return _read(vt, messageID);
   }
 
-  Future<Map<dynamic, dynamic>?> _read(Duration vt, int messageID) async {
+  Future<Message?> _read(Duration vt, int messageID) async {
     final query = "SELECT * FROM pgmq.read(@queue, @vt, @messageID);";
     final values = {
       'queue': _queueName,
@@ -78,7 +77,7 @@ class _QueuePostgresql2Impl implements Queue {
 
     final data = await _connection.query(query, values).toList();
     if (data.isNotEmpty) {
-      return data.first.toMap();
+      return _messageParser.messageFromRead(data.first.toMap());
     }
     return null;
   }

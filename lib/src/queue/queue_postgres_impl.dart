@@ -8,9 +8,10 @@ class _QueuePostgresImpl implements Queue {
   Statement? _archiveStatement;
   Statement? _deleteStatement;
 
+  final MessageParser _messageParser = MessageParser();
+
   @override
-  final StreamController<Map<String, dynamic>> controller =
-      StreamController.broadcast();
+  final StreamController<Message> controller = StreamController.broadcast();
 
   _QueuePostgresImpl(this._connection, this._queueName);
 
@@ -43,7 +44,7 @@ class _QueuePostgresImpl implements Queue {
   }
 
   @override
-  Future<Map<String, dynamic>> pop() async {
+  Future<Message?> pop() async {
     final query = "SELECT pgmq.pop(\$1);";
     _popStatement ??= await _connection.prepare(Sql(query));
     final result = await _popStatement!.run([_queueName]);
@@ -51,18 +52,22 @@ class _QueuePostgresImpl implements Queue {
     final decodedMessage = utf8.decode(
         (result.first.toColumnMap()['pop'] as UndecodedBytes).bytes,
         allowMalformed: true);
-    return json.decode(decodedMessage);
+    return _messageParser.messageFromPull(json.decode(decodedMessage));
   }
 
   @override
-  Stream<Map<String, dynamic>> pull({required Duration duration}) {
-    Timer.periodic(duration, (_) async => controller.add(await pop()));
+  Stream<Message> pull({required Duration duration}) {
+    Timer.periodic(duration, (_) async {
+      final message = await pop();
+      if (message != null) {
+        controller.add(message);
+      }
+    });
     return controller.stream;
   }
 
   @override
-  Future<Map<String, dynamic>> read(
-      {int? messageID, Duration? visibilityTimeOut}) async {
+  Future<Message?> read({int? messageID, Duration? visibilityTimeOut}) async {
     final vt = visibilityTimeOut ?? Duration(seconds: 10);
     if (messageID == null) {
       return await pop();
@@ -71,13 +76,13 @@ class _QueuePostgresImpl implements Queue {
     return _read(vt, messageID);
   }
 
-  Future<Map<String, dynamic>> _read(Duration vt, int messageID) async {
+  Future<Message?> _read(Duration vt, int messageID) async {
     final query = "SELECT * FROM pgmq.read(\$1, \$2, \$3);";
     _readStatement ??= await _connection.prepare(Sql(query));
     final result =
         await _readStatement!.run([_queueName, vt.inMilliseconds, messageID]);
 
-    return result.first.toColumnMap();
+    return _messageParser.messageFromRead(result.first.toColumnMap());
   }
 
   @override
