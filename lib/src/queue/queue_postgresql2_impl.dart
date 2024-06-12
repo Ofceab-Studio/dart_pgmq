@@ -1,5 +1,7 @@
 part of 'queue.dart';
 
+/// An implementation of the [Queue] abstract class with [postgresql2] package
+/// for managing message queues
 class _QueuePostgresql2Impl implements Queue {
   final postgresql2.Connection _connection;
   final String _queueName;
