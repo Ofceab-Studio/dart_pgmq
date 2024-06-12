@@ -56,33 +56,36 @@ class _QueuePostgresImpl implements Queue {
   }
 
   @override
-  Stream<Message> pull({required Duration duration}) {
+  Stream<Message> pull(
+      {required Duration duration, bool useReadMethod = true}) {
     Timer.periodic(duration, (_) async {
-      final message = await pop();
-      if (message != null) {
-        controller.add(message);
+      final message = useReadMethod
+          ? await read(visibilityTimeOut: duration)
+          : [await pop()];
+      if (message != null && message.isNotEmpty) {
+        controller.add(message.first!);
       }
     });
     return controller.stream;
   }
 
   @override
-  Future<Message?> read({int? messageID, Duration? visibilityTimeOut}) async {
+  Future<List<Message>?> read(
+      {int? maxReadNumber, Duration? visibilityTimeOut}) async {
     final vt = visibilityTimeOut ?? Duration(seconds: 10);
-    if (messageID == null) {
-      return await pop();
-    }
-
-    return _read(vt, messageID);
+    return _read(vt, maxReadNumber ?? 1);
   }
 
-  Future<Message?> _read(Duration vt, int messageID) async {
+  Future<List<Message>?> _read(Duration vt, int maxReadNumber) async {
     final query = "SELECT * FROM pgmq.read(\$1, \$2, \$3);";
     _readStatement ??= await _connection.prepare(Sql(query));
-    final result =
-        await _readStatement!.run([_queueName, vt.inMilliseconds, messageID]);
+    final result = await _readStatement!
+        .run([_queueName, vt.inMilliseconds, maxReadNumber]);
 
-    return _messageParser.messageFromRead(result.first.toColumnMap());
+    return result
+        .take(maxReadNumber)
+        .map((msg) => _messageParser.messageFromRead(msg.toColumnMap()))
+        .toList();
   }
 
   @override
@@ -97,5 +100,10 @@ class _QueuePostgresImpl implements Queue {
   @override
   Future<void> dispose() async {
     await controller.close();
+  }
+
+  @override
+  Future<int> purgeQueue() {
+    throw UnimplementedError();
   }
 }

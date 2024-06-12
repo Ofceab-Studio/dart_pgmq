@@ -1,3 +1,4 @@
+import 'package:dart_pgmq/src/message/message.dart';
 import 'package:dart_pgmq/src/pgmq/database_connection.dart';
 import 'package:dart_pgmq/src/pgmq/pgmq.dart';
 
@@ -14,19 +15,25 @@ void main() async {
     final pgmq = await Pgmq.createConnection(param: databaseParam);
 
     final queue = await pgmq.createQueue(queueName: 'yaya');
-    queue.pull(duration: Duration(milliseconds: 200)).listen((event) {
-      print(event.visibleAt);
-      print(event.payload);
-    });
+    // Purge queue
+    await queue.purgeQueue();
 
-    for (var i = 1; i <= 200; i++) {
+    // queue.pull(duration: Duration(milliseconds: 200)).listen((event) async {
+    //   print(event.visibleAt);
+    //   print(event.messageID);
+    //   print("Deleted : ${await queue.delete(event.messageID)}");
+    // });
+
+    for (var i = 1; i <= 5; i++) {
       final payload = {'id': i, 'message': 'message $i'};
       await queue.send(payload);
     }
 
-    // for (var i = 1; i <= 5; i++) {
-    //   print((await queue.read(messageID: i))?.payload);
-    // }
+    final data = (await queue.read(maxReadNumber: 5));
+
+    for (final msg in data ?? <Message>[]) {
+      print(msg.payload);
+    }
   } catch (e, stackTrace) {
     print(stackTrace);
     print(e.toString());

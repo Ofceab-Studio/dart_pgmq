@@ -47,37 +47,40 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Stream<Message> pull({required Duration duration}) {
+  Stream<Message> pull(
+      {required Duration duration, bool useReadMethod = true}) {
     Timer.periodic(duration, (_) async {
-      final message = await pop();
-      if (message != null) {
-        controller.add(message);
+      final message = useReadMethod
+          ? await read(visibilityTimeOut: duration)
+          : [await pop()];
+      if (message != null && message.isNotEmpty) {
+        controller.add(message.first!);
       }
     });
     return controller.stream;
   }
 
   @override
-  Future<Message?> read({int? messageID, Duration? visibilityTimeOut}) async {
+  Future<List<Message>?> read(
+      {int? maxReadNumber, Duration? visibilityTimeOut}) async {
     final vt = visibilityTimeOut ?? Duration(seconds: 10);
-    if (messageID == null) {
-      return await pop();
-    }
-
-    return _read(vt, messageID);
+    return _read(vt, maxReadNumber ?? 1);
   }
 
-  Future<Message?> _read(Duration vt, int messageID) async {
-    final query = "SELECT * FROM pgmq.read(@queue, @vt, @messageID);";
+  Future<List<Message>?> _read(Duration vt, int maxReadNumber) async {
+    final query = "SELECT * FROM pgmq.read(@queue, @vt, @maxReadNumber);";
     final values = {
       'queue': _queueName,
-      'messageID': messageID,
-      'vt': vt.inMilliseconds
+      'maxReadNumber': maxReadNumber,
+      'vt': vt.inSeconds
     };
 
     final data = await _connection.query(query, values).toList();
     if (data.isNotEmpty) {
-      return _messageParser.messageFromRead(data.first.toMap());
+      return data
+          .take(maxReadNumber)
+          .map((msg) => _messageParser.messageFromRead(msg.toMap()))
+          .toList();
     }
     return null;
   }
@@ -94,5 +97,15 @@ class _QueuePostgresql2Impl implements Queue {
   @override
   Future<void> dispose() async {
     await controller.close();
+  }
+
+  @override
+  Future<int> purgeQueue() async {
+    final query = "select * from pgmq.purge_queue(@queue);";
+    final values = {'queue': _queueName};
+
+    final data = await _connection.query(query, values).toList();
+    print(data.first.toMap());
+    return 1;
   }
 }
