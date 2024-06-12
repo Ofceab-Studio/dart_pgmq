@@ -7,8 +7,8 @@ class _Pgmp implements Pgmq {
 
   @override
   Future<Queue> createQueue({required String queueName}) async {
-    final query = 'SELECT pgmq.create($queueName);';
-    final result = await connection.execute(query);
+    final query = 'SELECT pgmq.create(\$1);';
+    final result = await connection.execute(query, parameters: [queueName]);
     if (result.isNotEmpty) {
       return Queue(connection, queueName);
     }
