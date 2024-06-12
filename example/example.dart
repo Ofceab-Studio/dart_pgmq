@@ -18,22 +18,39 @@ void main() async {
     // Purge queue
     await queue.purgeQueue();
 
-    // queue.pull(duration: Duration(milliseconds: 200)).listen((event) async {
-    //   print(event.visibleAt);
-    //   print(event.messageID);
-    //   print("Deleted : ${await queue.delete(event.messageID)}");
-    // });
+    final (pausableTimer1, stream1) =
+        queue.pausablePull(duration: Duration(milliseconds: 100));
+    pausableTimer1.start();
 
-    for (var i = 1; i <= 5; i++) {
+    final (pausableTimer2, stream2) =
+        queue.pausablePull(duration: Duration(milliseconds: 100));
+    pausableTimer2.start();
+
+    stream1.listen((event) async {
+      print("Subscription 1: ${event.messageID}");
+      print("Suscription 1 Deleted : ${await queue.delete(event.messageID)}");
+    });
+
+    stream2.listen((event) async {
+      print("Subscription 2: ${event.messageID}");
+      print("Suscription 2 Deleted : ${await queue.delete(event.messageID)}");
+    });
+
+    Future.delayed(Duration(seconds: 1), pausableTimer1.pause);
+
+    Future.delayed(Duration(seconds: 10), pausableTimer1.start);
+
+    for (var i = 1; i <= 20; i++) {
+      await Future.delayed(Duration(seconds: 3));
       final payload = {'id': i, 'message': 'message $i'};
       await queue.send(payload);
     }
 
-    final data = (await queue.read(maxReadNumber: 5));
+    // final data = (await queue.read(maxReadNumber: 5));
 
-    for (final msg in data ?? <Message>[]) {
-      print(msg.payload);
-    }
+    // for (final msg in data ?? <Message>[]) {
+    //   print(msg.payload);
+    // }
   } catch (e, stackTrace) {
     print(stackTrace);
     print(e.toString());

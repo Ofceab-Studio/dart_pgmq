@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:dart_pgmq/src/message/message.dart';
+import 'package:pausable_timer/pausable_timer.dart';
 import 'package:postgres/postgres.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
@@ -10,7 +11,7 @@ part 'queue_postgresql2_impl.dart';
 /// An abstract class that represents a `postgresql` message queue.
 abstract class Queue {
   /// A [StreamController] that allows for listening to incoming messages from the queue.
-  StreamController<Message> get controller;
+  List<StreamController<Message>> get controllers;
 
   /// Creates a new instance of [Queue] using the [postgresql2] package as the `postgresql` driver.
   factory Queue.uingPostgresql2(
@@ -54,5 +55,13 @@ abstract class Queue {
   Future<void> dispose();
 
   /// Continuously pulls messages from the queue for the specified duration.
-  Stream<Message> pull({required Duration duration, bool useReadMethod = true});
+  Stream<Message> pull(
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true});
+
+  (PausableTimer, Stream<Message>) pausablePull(
+      {required Duration duration,
+      Duration? visibilityDuration,
+      bool useReadMethod = true});
 }

@@ -145,6 +145,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  clock:
+    dependency: transitive
+    description:
+      name: clock
+      sha256: cb6d7f03e1de671e34607e909a7213e31d7752be4fb66a86d29fe1eb14bfb5cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   code_builder:
     dependency: transitive
     description:
@@ -337,6 +345,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
+  pausable_timer:
+    dependency: "direct main"
+    description:
+      name: pausable_timer
+      sha256: "6ef1a95441ec3439de6fb63f39a011b67e693198e7dae14e20675c3c00e86074"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0+3"
   pedantic:
     dependency: transitive
     description:
