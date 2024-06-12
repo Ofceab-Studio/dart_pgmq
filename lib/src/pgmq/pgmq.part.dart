@@ -1,5 +1,7 @@
 part of 'pgmq.dart';
 
+/// An implementation of the [Pgmq] abstract class for creating and managing
+/// a `postgresql` message queues.
 class _Pgmp implements Pgmq {
   final Connection? connection;
   final Future<postgresql2.Connection>? postgresql2Connection;
