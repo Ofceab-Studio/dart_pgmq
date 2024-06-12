@@ -9,6 +9,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   postgres: ^3.2.1
+  postgresql2: ^1.6.2
   # path: ^1.8.0
 
 dev_dependencies:

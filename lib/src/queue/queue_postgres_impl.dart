@@ -1,16 +1,18 @@
 part of 'queue.dart';
 
-class _Queue implements Queue {
+class _QueuePostgresImpl implements Queue {
   final Connection _connection;
   final String _queueName;
   Statement? _readStatement;
   Statement? _popStatement;
   Statement? _archiveStatement;
   Statement? _deleteStatement;
-  final StreamController<Map<String, dynamic>> _controller =
+
+  @override
+  final StreamController<Map<String, dynamic>> controller =
       StreamController.broadcast();
 
-  _Queue(this._connection, this._queueName);
+  _QueuePostgresImpl(this._connection, this._queueName);
 
   @override
   Future<int> archive(int messageID) async {
@@ -43,23 +45,25 @@ class _Queue implements Queue {
   @override
   Future<Map<String, dynamic>> pop() async {
     final query = "SELECT pgmq.pop(\$1);";
-
     _popStatement ??= await _connection.prepare(Sql(query));
     final result = await _popStatement!.run([_queueName]);
-    print((result.first.toColumnMap()['pop'] as UndecodedBytes).asString);
-    return result.first.toColumnMap();
+
+    final decodedMessage = utf8.decode(
+        (result.first.toColumnMap()['pop'] as UndecodedBytes).bytes,
+        allowMalformed: true);
+    return json.decode(decodedMessage);
   }
 
   @override
   Stream<Map<String, dynamic>> pull({required Duration duration}) {
-    Timer.periodic(duration, (_) async => _controller.add(await pop()));
-    return _controller.stream;
+    Timer.periodic(duration, (_) async => controller.add(await pop()));
+    return controller.stream;
   }
 
   @override
   Future<Map<String, dynamic>> read(
       {int? messageID, Duration? visibilityTimeOut}) async {
-    final vt = visibilityTimeOut ?? Duration(milliseconds: 10);
+    final vt = visibilityTimeOut ?? Duration(seconds: 10);
     if (messageID == null) {
       return await pop();
     }
@@ -83,5 +87,10 @@ class _Queue implements Queue {
     final result = await _connection
         .execute(query, parameters: [_queueName, json.encode(payload)]);
     return result.affectedRows;
+  }
+
+  @override
+  Future<void> dispose() async {
+    await controller.close();
   }
 }

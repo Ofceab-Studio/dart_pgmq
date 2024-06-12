@@ -1,3 +1,5 @@
+import 'package:postgresql2/postgresql.dart' as postgresql2;
+
 import '../exception/pgmq_exception.dart';
 import '../queue/queue.dart';
 import 'database_connection.dart';
@@ -9,21 +11,14 @@ abstract class Pgmq {
   /// Create queue
   /// [queueName] : name of the queue
   static Future<Pgmq> createConnection(
-      {required DatabaseConnectionParam param}) async {
+      {required DatabaseConnection param, bool usePostgresql2 = true}) async {
     try {
-      final dbConnection = await Connection.open(
-          Endpoint(
-            host: param.host,
-            database: param.database,
-            username: param.username,
-            password: param.password,
-            port: param.port,
-          ),
-          settings: ConnectionSettings(
-            sslMode: param.ssl ? SslMode.require : SslMode.disable,
-          ));
-
-      return _Pgmp(connection: dbConnection);
+      if (usePostgresql2) {
+        return _Pgmp.fromPostgresql2Connection(
+            connection: param.connectionUsingPostgresql2());
+      }
+      return _Pgmp.fromPostgresConnection(
+          connection: await param.connectionUsingPostgres());
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(
