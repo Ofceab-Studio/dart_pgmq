@@ -20,7 +20,7 @@ class DatabaseConnection {
 
   Future<postgresql2.Connection> connectionUsingPostgresql2(
       {int? minConnection, int? maxConnection}) async {
-    final uri = _getDBUri;
+    final uri = _getDBUri(ssl);
     final pool = postgresql2pool.Pool(uri,
         minConnections: minConnection ?? 2, maxConnections: maxConnection ?? 5);
     await pool.start();
@@ -42,6 +42,7 @@ class DatabaseConnection {
         ));
   }
 
-  String get _getDBUri =>
-      'postgres://$username:$password@$host:$port/$database';
+  String _getDBUri(bool ssl) => ssl
+      ? 'postgres://$username:$password@$host:$port/$database?sslmode=require'
+      : 'postgres://$username:$password@$host:$port/$database';
 }
