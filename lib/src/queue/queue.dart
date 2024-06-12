@@ -9,7 +9,7 @@ part 'queue_postgres_impl.dart';
 part 'queue_postgresql2_impl.dart';
 
 abstract class Queue {
-  StreamController<Message> get controller;
+  List<StreamController<Message>> get controllers;
 
   /// Create a queue using Postgresql2 as postgres driver
   factory Queue.uingPostgresql2(

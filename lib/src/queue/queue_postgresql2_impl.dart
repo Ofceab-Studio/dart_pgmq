@@ -6,7 +6,7 @@ class _QueuePostgresql2Impl implements Queue {
   final MessageParser _messageParser = MessageParser();
 
   @override
-  final StreamController<Message> controller = StreamController.broadcast();
+  final List<StreamController<Message>> controllers = [];
 
   _QueuePostgresql2Impl(this._connection, this._queueName);
 
@@ -49,15 +49,17 @@ class _QueuePostgresql2Impl implements Queue {
   @override
   Stream<Message> pull(
       {required Duration duration, bool useReadMethod = true}) {
+    final stream = StreamController<Message>();
+    controllers.add(stream);
     Timer.periodic(duration, (_) async {
       final message = useReadMethod
           ? await read(visibilityTimeOut: duration)
           : [await pop()];
       if (message != null && message.isNotEmpty) {
-        controller.add(message.first!);
+        stream.add(message.first!);
       }
     });
-    return controller.stream;
+    return stream.stream;
   }
 
   @override
@@ -96,7 +98,9 @@ class _QueuePostgresql2Impl implements Queue {
 
   @override
   Future<void> dispose() async {
-    await controller.close();
+    for (final controller in controllers) {
+      await controller.close();
+    }
   }
 
   @override
@@ -105,7 +109,6 @@ class _QueuePostgresql2Impl implements Queue {
     final values = {'queue': _queueName};
 
     final data = await _connection.query(query, values).toList();
-    print(data.first.toMap());
-    return 1;
+    return int.parse(data.first.toMap()['purge_queue'].toString());
   }
 }

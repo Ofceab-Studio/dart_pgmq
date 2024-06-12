@@ -18,22 +18,29 @@ void main() async {
     // Purge queue
     await queue.purgeQueue();
 
-    // queue.pull(duration: Duration(milliseconds: 200)).listen((event) async {
-    //   print(event.visibleAt);
-    //   print(event.messageID);
-    //   print("Deleted : ${await queue.delete(event.messageID)}");
-    // });
+    final subscription =
+        queue.pull(duration: Duration(seconds: 2)).listen((event) async {
+      print("Subscription 1 ${event.messageID}");
+      print("Suscription 1 Deleted : ${await queue.delete(event.messageID)}");
+    });
 
-    for (var i = 1; i <= 5; i++) {
+    final subscription2 =
+        queue.pull(duration: Duration(seconds: 2)).listen((event) async {
+      print("Subscription 2: ${event.messageID}");
+      print("Suscription 2 Deleted : ${await queue.delete(event.messageID)}");
+    });
+
+    for (var i = 1; i <= 20; i++) {
+      Future.delayed(Duration(seconds: 3));
       final payload = {'id': i, 'message': 'message $i'};
       await queue.send(payload);
     }
 
-    final data = (await queue.read(maxReadNumber: 5));
+    // final data = (await queue.read(maxReadNumber: 5));
 
-    for (final msg in data ?? <Message>[]) {
-      print(msg.payload);
-    }
+    // for (final msg in data ?? <Message>[]) {
+    //   print(msg.payload);
+    // }
   } catch (e, stackTrace) {
     print(stackTrace);
     print(e.toString());
