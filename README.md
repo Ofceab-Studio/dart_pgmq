@@ -67,7 +67,7 @@ queue.delete(messageID);
 ```
 
 ```dart
-// Pull messages from queue for specified duration
+// Pull messages from queue with a specified polling duration
 queue.pull(duration: duration);
 ```
 
