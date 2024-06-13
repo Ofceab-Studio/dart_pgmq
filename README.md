@@ -72,9 +72,24 @@ queue.pull(duration: duration);
 ```
 
 ```dart
+// Pausable pull
+final (pausableTimer, stream) = queue.pausablePull(duration: duration);
+// Start the pausable pull
+pausableTimer.start();
+// Pause the pulling
+pausableTimer.pause();
+```
+
+```dart
 // Read a message from queue and delete it upon read
 queue.pop();
 ```
+
+```dart
+// Purge all messages from queue
+queue.purgeQueue();
+```
+
 ```dart
 // Drops the queue
 queue.dropQueue();
@@ -107,3 +122,6 @@ queue.dropQueue();
   - [ ] [list_queues](https://tembo-io.github.io/pgmq/api/sql/functions/#list_queues)
   - [ ] [metrics](https://tembo-io.github.io/pgmq/api/sql/functions/#metrics)
   - [ ] [metrics_all](https://tembo-io.github.io/pgmq/api/sql/functions/#metrics_all)
+
+## Customs Features 
+- [x] Pausable Queue
