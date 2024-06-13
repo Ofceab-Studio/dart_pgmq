@@ -1,4 +1,3 @@
-import 'package:dart_pgmq/src/message/message.dart';
 import 'package:dart_pgmq/src/pgmq/database_connection.dart';
 import 'package:dart_pgmq/src/pgmq/pgmq.dart';
 
