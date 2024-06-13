@@ -30,7 +30,7 @@ CREATE EXTENSION pgmq;
 final databaseParam = DatabaseConnection(
       host: 'localhost',
       database: 'postgres',
-      password: 'password',
+      password: 'postgres',
       username: 'postgres',
       ssl: false,
       port: 5432);
