@@ -51,6 +51,10 @@ abstract class Queue {
   /// Drops the queue, effectively removing it from the database
   Future<void> dropQueue();
 
+  /// Set visibility timeout of a message
+  Future<Message?> setVisibilityTimout(
+      {required int messageID, required Duration duration});
+
   /// Disposes of any resources associated with the queue.
   Future<void> dispose();
 

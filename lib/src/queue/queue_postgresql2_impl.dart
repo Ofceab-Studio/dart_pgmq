@@ -135,4 +135,22 @@ class _QueuePostgresql2Impl implements Queue {
 
     return (pausableTimer, stream.stream);
   }
+
+  @override
+  Future<Message?> setVisibilityTimout(
+      {required int messageID, required Duration duration}) async {
+    final query = "select * from pgmq.set_vt(@queue,@messageID,@duration);";
+    final values = {
+      'queue': _queueName,
+      'messageID': messageID,
+      'duration': duration.inSeconds
+    };
+
+    final data = await _connection.query(query, values).toList();
+    if (data.isNotEmpty) {
+      return _messageParser.messageFromRead(data.first.toMap());
+    }
+
+    return null;
+  }
 }

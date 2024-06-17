@@ -133,4 +133,10 @@ class _QueuePostgresImpl implements Queue {
 
     return (pausableTimer, stream.stream);
   }
+
+  @override
+  Future<Message?> setVisibilityTimout(
+      {required int messageID, required Duration duration}) {
+    throw UnimplementedError();
+  }
 }
