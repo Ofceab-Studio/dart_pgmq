@@ -137,7 +137,7 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Future<Message?> setVisibilityTimout(
+  Future<Message?> setVisibilityTimeout(
       {required int messageID, required Duration duration}) async {
     final query = "select * from pgmq.set_vt(@queue,@messageID,@duration);";
     final values = {

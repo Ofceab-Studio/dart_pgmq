@@ -135,7 +135,7 @@ class _QueuePostgresImpl implements Queue {
   }
 
   @override
-  Future<Message?> setVisibilityTimout(
+  Future<Message?> setVisibilityTimeout(
       {required int messageID, required Duration duration}) {
     throw UnimplementedError();
   }

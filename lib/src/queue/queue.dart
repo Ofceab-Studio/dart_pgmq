@@ -52,7 +52,7 @@ abstract class Queue {
   Future<void> dropQueue();
 
   /// Set visibility timeout of a message
-  Future<Message?> setVisibilityTimout(
+  Future<Message?> setVisibilityTimeout(
       {required int messageID, required Duration duration});
 
   /// Disposes of any resources associated with the queue.
