@@ -18,24 +18,29 @@ class _Pgmp implements Pgmq {
 
   @override
   Future<Queue> createQueue({required String queueName}) async {
-    try {
-      if (connection != null) {
-        final query = 'SELECT pgmq.create(\$1);';
-        final result =
-            await connection!.execute(query, parameters: [queueName]);
-        if (result.isNotEmpty) {
-          return Queue.uingPostgresql(connection!, queueName);
+    if (queueName.isEmpty) {
+      throw GenericPgmqException(
+          message: 'Queue should not be created with empty name');
+    } else {
+      try {
+        if (connection != null) {
+          final query = 'SELECT pgmq.create(\$1);';
+          final result =
+              await connection!.execute(query, parameters: [queueName]);
+          if (result.isNotEmpty) {
+            return Queue.uingPostgresql(connection!, queueName);
+          }
+        } else if (postgresql2Connection != null) {
+          final conn = await postgresql2Connection;
+          final query = 'SELECT pgmq.create(@queue);';
+          await conn!.execute(query, {'queue': queueName});
+          return Queue.uingPostgresql2(conn, queueName);
         }
-      } else if (postgresql2Connection != null) {
-        final conn = await postgresql2Connection;
-        final query = 'SELECT pgmq.create(@queue);';
-        await conn!.execute(query, {'queue': queueName});
-        return Queue.uingPostgresql2(conn, queueName);
-      }
 
-      throw GenericPgmqException(message: 'Unable to create a queue');
-    } catch (e) {
-      rethrow;
+        throw GenericPgmqException(message: 'Unable to create a queue');
+      } catch (e) {
+        rethrow;
+      }
     }
   }
 }
