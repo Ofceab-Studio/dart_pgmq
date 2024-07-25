@@ -28,13 +28,13 @@ class _QueuePostgresql2Impl implements Queue {
     final query = "SELECT pgmq.delete(@queue,@messageID);";
 
     final values = {'queue': _queueName, 'messageID': messageID};
-    final timer = Stopwatch()..start();
     _connection ??= await _getConnectionFromPool();
-    print('time took for getting connection : ${timer.elapsed.inMilliseconds}');
-    timer.stop();
-    timer.start();
+    // print('time took for getting connection : ${timer.elapsed.inMilliseconds}');
+    // timer.start();
+    final timer = DateTime.now();
     final index = await _connection!.execute(query, values);
-    print('time took for execution  : ${timer.elapsed.inMilliseconds}');
+    final end = DateTime.now();
+    print('time took for execution  : ${end.difference(timer).inMilliseconds}');
     return index;
   }
 
