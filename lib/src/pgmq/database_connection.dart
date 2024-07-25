@@ -36,13 +36,23 @@ class DatabaseConnection {
   ///
   /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
   /// to configure the connection pool.
-  Future<postgresql2.Connection> connectionUsingPostgresql2(
-      {int? minConnection, int? maxConnection}) async {
+  Future<Future<postgresql2.Connection> Function()> connectionUsingPostgresql2(
+      {int? minConnection,
+      int? maxConnection,
+      Duration? connectionTimeout,
+      Duration? establishTimeout,
+      Duration? limitTimeout,
+      int? limitConnections}) async {
     final uri = _getDBUri(ssl);
     final pool = postgresql2pool.Pool(uri,
-        minConnections: minConnection ?? 2, maxConnections: maxConnection ?? 5);
+        connectionTimeout: connectionTimeout,
+        establishTimeout: establishTimeout,
+        limitConnections: limitConnections,
+        limitTimeout: limitTimeout,
+        minConnections: minConnection ?? 2,
+        maxConnections: maxConnection ?? 5);
     await pool.start();
-    return pool.connect();
+    return pool.connect;
   }
 
   /// Establishes a connection to the `postgresql` database using the [postgres] package.

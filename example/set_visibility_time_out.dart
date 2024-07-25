@@ -21,7 +21,7 @@ void main() async {
     await queue.purgeQueue();
 
     // Play with pausablePull
-    final (pausableTimer, stream) = queue.pausablePull(
+    final (pausableTimer, stream) = await queue.pausablePull(
         duration: Duration(milliseconds: 100),
         visibilityDuration: Duration(seconds: 30));
     pausableTimer.start();
