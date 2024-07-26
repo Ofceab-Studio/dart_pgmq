@@ -3,11 +3,11 @@ import 'package:dart_pgmq/dart_pgmq.dart';
 Future<void> main() async {
   // Create a DatabaseConnection
   final databaseParam = DatabaseConnection(
-      host: 'fallaciously-sterling-slug.data-1.use1.tembo.io',
+      host: 'localhost',
       database: 'postgres',
-      password: 'SvPlgCGC2o57KGGK',
+      password: 'password',
       username: 'postgres',
-      ssl: true,
+      ssl: false,
       port: 5432);
 
   final a = Stopwatch()..start();
