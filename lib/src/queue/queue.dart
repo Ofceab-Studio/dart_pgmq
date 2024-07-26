@@ -54,7 +54,7 @@ abstract class Queue {
       Duration? visibilityDuration,
       bool useReadMethod = true});
 
-  Future<(PausableTimer, Stream<Message>)> pausablePull(
+  (PausableTimer, Stream<Message>) pausablePull(
       {required Duration duration,
       Duration? visibilityDuration,
       bool useReadMethod = true});

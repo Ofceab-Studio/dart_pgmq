@@ -144,19 +144,17 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Future<(PausableTimer, Stream<Message>)> pausablePull(
+  (PausableTimer, Stream<Message>) pausablePull(
       {required Duration duration,
       Duration? visibilityDuration,
-      bool useReadMethod = true}) async {
+      bool useReadMethod = true}) {
     final stream = StreamController<Message>();
     controllers.add(stream);
 
     final pausableTimer = PausableTimer.periodic(duration, () async {
-      final a = Stopwatch()..start();
       final message = useReadMethod
           ? await read(visibilityTimeOut: visibilityDuration)
           : [await pop()];
-      a.stop();
       if (message != null && message.isNotEmpty) {
         stream.add(message.first!);
       }

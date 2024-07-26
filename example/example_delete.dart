@@ -27,7 +27,7 @@ Future<void> main() async {
 
   await queue.purgeQueue();
 
-  List<int> _messageIDs = [];
+  List<int> messageIDs = [];
 
   // Send message
   for (var i = 1; i <= 40; i++) {
@@ -36,18 +36,18 @@ Future<void> main() async {
       'message':
           'message $i message $i message $i message $i message $i message $i message $i'
     };
-    _messageIDs.add(await queue.send(payload));
+    messageIDs.add(await queue.send(payload));
     // print("Done saving ...");
   }
 
-  final (pause, stream) = await queue.pausablePull(
+  final (pause, _) = queue.pausablePull(
       duration: Duration(milliseconds: 300),
       visibilityDuration: Duration(seconds: 40));
   pause.start();
 
   await Future.delayed(Duration(minutes: 3));
 
-  for (var id in _messageIDs) {
+  for (var id in messageIDs) {
     final stopWatch = Stopwatch()..start();
     await queue.delete(id);
     print("Delete $id: ${stopWatch.elapsedMilliseconds}");
