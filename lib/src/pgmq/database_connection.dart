@@ -1,4 +1,5 @@
 import 'package:postgresql2/pool.dart' as postgresql2pool;
+import 'package:postgresql2/pool.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
 class PoolConnectionOptions {
@@ -62,8 +63,9 @@ class DatabaseConnection {
   ///
   /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
   /// to configure the connection pool.
-  Future<Future<postgresql2.Connection> Function()> connectionUsingPostgresql2(
-      PoolConnectionOptions poolConnectionOptions) async {
+  Future<(Pool, Future<postgresql2.Connection> Function())>
+      connectionUsingPostgresql2(
+          PoolConnectionOptions poolConnectionOptions) async {
     final uri = _getDBUri(ssl);
     final pool = postgresql2pool.Pool(uri,
         connectionTimeout: poolConnectionOptions.connectionTimeout,
@@ -78,7 +80,7 @@ class DatabaseConnection {
         minConnections: poolConnectionOptions.minConnection ?? 2,
         maxConnections: poolConnectionOptions.maxConnection ?? 5);
     await pool.start();
-    return pool.connect;
+    return (pool, pool.connect);
   }
 
   /// Returns the `postgresql` connection URI based on the SSL configuration.
