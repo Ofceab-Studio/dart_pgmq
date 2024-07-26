@@ -12,25 +12,19 @@ Future<void> main() async {
 
   // Create a connexion
   final pgmq = await Pgmq.createConnection(param: databaseParam);
-  // final pgmq1 = await Pgmq.createConnection(param: databaseParam);
 
   //  Create a queue
   final queue = await pgmq.createQueue(queueName: 'test');
-  // final queue1 = await pgmq1.createQueue(queueName: 'test');
 
   // Purge queue
   await queue.purgeQueue();
   print('purged');
   // await Future.delayed(Duration(seconds: 3));
 
-  final (pause, stream) = await queue.pausablePull(
-      duration: Duration(milliseconds: 300),
-      visibilityDuration: Duration(seconds: 50));
-
-  pause.start();
+  final puller = queue.pull(duration: Duration(seconds: 1));
 
   // Send message
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 10; i++) {
     final payload = {'id': i, 'message': 'message $i'};
     queue.send(payload);
     // print('message sent');
@@ -38,16 +32,12 @@ Future<void> main() async {
 
   // await Future.delayed(Duration(minutes: 3));
 
-  stream.listen((event) async {
+  puller.listen((event) async {
     final msg = event;
     final start = DateTime.now();
     await queue.delete(msg.messageID);
     final end = DateTime.now();
     print('time taken : ${end.difference(start).inMilliseconds}');
+    // duration.stop();
   });
-
-  // final data = (await queue.read());
-
-  // Read message
-  // for (final msg in data ?? <Message>[]) {
 }

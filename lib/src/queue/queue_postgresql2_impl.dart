@@ -5,13 +5,16 @@ part of 'queue.dart';
 class _QueuePostgresql2Impl implements Queue {
   final Future<postgresql2.Connection> Function() _getConnectionFromPool;
   postgresql2.Connection? _connection;
+  final postgresql2.Connection _deletionConnection;
+
   final String _queueName;
   final MessageParser _messageParser = MessageParser();
 
   @override
   final List<StreamController<Message>> controllers = [];
 
-  _QueuePostgresql2Impl(this._getConnectionFromPool, this._queueName);
+  _QueuePostgresql2Impl(
+      this._getConnectionFromPool, this._queueName, this._deletionConnection);
 
   @override
   Future<int> archive(int messageID) async {
@@ -28,13 +31,8 @@ class _QueuePostgresql2Impl implements Queue {
     final query = "SELECT pgmq.delete(@queue,@messageID);";
 
     final values = {'queue': _queueName, 'messageID': messageID};
-    _connection ??= await _getConnectionFromPool();
-    // print('time took for getting connection : ${timer.elapsed.inMilliseconds}');
-    // timer.start();
-    final timer = DateTime.now();
-    final index = await _connection!.execute(query, values);
-    final end = DateTime.now();
-    print('time took for execution  : ${end.difference(timer).inMilliseconds}');
+    final conn = _deletionConnection;
+    final index = await conn.execute(query, values);
     return index;
   }
 

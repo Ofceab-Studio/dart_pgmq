@@ -12,29 +12,27 @@ Future<void> main() async {
 
   // Create a connexion
   final pgmq = await Pgmq.createConnection(param: databaseParam);
-  // final pgmq1 = await Pgmq.createConnection(param: databaseParam);
 
   //  Create a queue
   final queue = await pgmq.createQueue(queueName: 'test');
-  // final queue1 = await pgmq1.createQueue(queueName: 'test');
 
   // Purge queue
-  await queue.purgeQueue();
-  print('purged');
+  // await queue.purgeQueue();
+  // print('purged');
   // await Future.delayed(Duration(seconds: 3));
 
   final (pause, stream) = await queue.pausablePull(
-      duration: Duration(milliseconds: 300),
-      visibilityDuration: Duration(seconds: 50));
+      duration: Duration(seconds: 1), visibilityDuration: Duration(seconds: 0));
 
   pause.start();
 
   // Send message
-  for (var i = 0; i < 100; i++) {
-    final payload = {'id': i, 'message': 'message $i'};
-    queue.send(payload);
-    // print('message sent');
-  }
+  // for (var i = 0; i < 1000; i++) {
+  //   final payload = {'id': i, 'message': 'message $i'};
+  //   await Future.delayed(Duration(seconds: 5));
+  //   queue.send(payload);
+  //   print('message sent $i');
+  // }
 
   // await Future.delayed(Duration(minutes: 3));
 
@@ -44,10 +42,6 @@ Future<void> main() async {
     await queue.delete(msg.messageID);
     final end = DateTime.now();
     print('time taken : ${end.difference(start).inMilliseconds}');
+    // duration.stop();
   });
-
-  // final data = (await queue.read());
-
-  // Read message
-  // for (final msg in data ?? <Message>[]) {
 }
