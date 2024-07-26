@@ -19,7 +19,11 @@ Future<void> main() async {
   // Send message
   for (var i = 1; i <= 20; i++) {
     await Future.delayed(Duration(seconds: 3));
-    final payload = {'id': i, 'message': 'message $i'};
+    final payload = {
+      'id': i,
+      'message':
+          'message $i message $i message $i message $i message $i message $i message $i'
+    };
     await queue.send(payload);
   }
 

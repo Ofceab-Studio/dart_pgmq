@@ -2,7 +2,6 @@ import 'package:postgresql2/postgresql.dart' as postgresql2;
 import '../exception/pgmq_exception.dart';
 import '../queue/queue.dart';
 import 'database_connection.dart';
-import 'package:postgres/postgres.dart';
 
 part 'pgmq.part.dart';
 
@@ -20,14 +19,12 @@ abstract class Pgmq {
   ///
   /// Throws a [GenericPgmqException] if there is an error connecting to the database.
   static Future<Pgmq> createConnection(
-      {required DatabaseConnection param, bool usePostgresql2 = true}) async {
+      {required DatabaseConnection param,
+      PoolConnectionOptions? options}) async {
     try {
-      if (usePostgresql2) {
-        return _Pgmp.fromPostgresql2Connection(
-            connection: param.connectionUsingPostgresql2());
-      }
-      return _Pgmp.fromPostgresConnection(
-          connection: await param.connectionUsingPostgres());
+      return _Pgmp.fromPostgresql2Connection(
+          connection: await param
+              .connectionUsingPostgresql2(options ?? PoolConnectionOptions()));
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(

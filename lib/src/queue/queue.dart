@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:dart_pgmq/src/message/message.dart';
 import 'package:pausable_timer/pausable_timer.dart';
-import 'package:postgres/postgres.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
-part 'queue_postgres_impl.dart';
 part 'queue_postgresql2_impl.dart';
 
 /// An abstract class that represents a `postgresql` message queue.
@@ -14,17 +11,10 @@ abstract class Queue {
   List<StreamController<Message>> get controllers;
 
   /// Creates a new instance of [Queue] using the [postgresql2] package as the `postgresql` driver.
-  factory Queue.uingPostgresql2(
-          postgresql2.Connection connection, String queueName) =>
+  factory Queue.usingPostgresql2(
+          Future<postgresql2.Connection> Function() connection,
+          String queueName) =>
       _QueuePostgresql2Impl(connection, queueName);
-
-  /// Creates a new instance of [Queue] using the [postgres] package as the `postgresql` driver.
-  ///
-  /// [Disclamer]: this implementation using [postgres] library is not yet stable due to some
-  /// issues during database response encoding
-  /// We recommended using [Queue.uingPostgresql2(connection, queueName)] instead
-  factory Queue.uingPostgresql(Connection connection, String queueName) =>
-      _QueuePostgresImpl(connection, queueName);
 
   /// Sends a message to the queue with the specified payload.
   Future<int> send(Map<String, dynamic> payload);
@@ -64,7 +54,7 @@ abstract class Queue {
       Duration? visibilityDuration,
       bool useReadMethod = true});
 
-  (PausableTimer, Stream<Message>) pausablePull(
+  Future<(PausableTimer, Stream<Message>)> pausablePull(
       {required Duration duration,
       Duration? visibilityDuration,
       bool useReadMethod = true});

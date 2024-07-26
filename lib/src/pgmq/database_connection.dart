@@ -1,6 +1,32 @@
-import 'package:postgres/postgres.dart';
 import 'package:postgresql2/pool.dart' as postgresql2pool;
 import 'package:postgresql2/postgresql.dart' as postgresql2;
+
+class PoolConnectionOptions {
+  int? minConnection;
+  int? maxConnection;
+  Duration? connectionTimeout;
+  Duration? idleTimeout;
+  Duration? establishTimeout;
+  Duration? limitTimeout;
+  Duration? maxLifetime;
+  Duration? leakDetectionThreshold;
+  Duration? startTimeout;
+  Duration? stopTimeout;
+  int? limitConnections;
+
+  PoolConnectionOptions(
+      {this.connectionTimeout,
+      this.establishTimeout,
+      this.idleTimeout,
+      this.limitConnections,
+      this.limitTimeout,
+      this.maxConnection,
+      this.startTimeout,
+      this.stopTimeout,
+      this.maxLifetime,
+      this.leakDetectionThreshold,
+      this.minConnection});
+}
 
 /// The [DatabaseConnection] class provides methods to establish a connection
 /// to a `postgresql` database.
@@ -36,32 +62,23 @@ class DatabaseConnection {
   ///
   /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
   /// to configure the connection pool.
-  Future<postgresql2.Connection> connectionUsingPostgresql2(
-      {int? minConnection, int? maxConnection}) async {
+  Future<Future<postgresql2.Connection> Function()> connectionUsingPostgresql2(
+      PoolConnectionOptions poolConnectionOptions) async {
     final uri = _getDBUri(ssl);
     final pool = postgresql2pool.Pool(uri,
-        minConnections: minConnection ?? 2, maxConnections: maxConnection ?? 5);
+        connectionTimeout: poolConnectionOptions.connectionTimeout,
+        establishTimeout: poolConnectionOptions.establishTimeout,
+        limitConnections: poolConnectionOptions.limitConnections,
+        idleTimeout: poolConnectionOptions.idleTimeout,
+        leakDetectionThreshold: poolConnectionOptions.leakDetectionThreshold,
+        startTimeout: poolConnectionOptions.startTimeout,
+        stopTimeout: poolConnectionOptions.stopTimeout,
+        maxLifetime: poolConnectionOptions.maxLifetime,
+        limitTimeout: poolConnectionOptions.limitTimeout,
+        minConnections: poolConnectionOptions.minConnection ?? 2,
+        maxConnections: poolConnectionOptions.maxConnection ?? 5);
     await pool.start();
-    return pool.connect();
-  }
-
-  /// Establishes a connection to the `postgresql` database using the [postgres] package.
-  ///
-  /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
-  /// to configure the connection pool.
-  Future<Connection> connectionUsingPostgres(
-      {int? minConnection, int? maxConnection}) async {
-    return await Connection.open(
-        Endpoint(
-          host: host,
-          database: database,
-          username: username,
-          password: password,
-          port: port,
-        ),
-        settings: ConnectionSettings(
-          sslMode: ssl ? SslMode.require : SslMode.disable,
-        ));
+    return pool.connect;
   }
 
   /// Returns the `postgresql` connection URI based on the SSL configuration.
