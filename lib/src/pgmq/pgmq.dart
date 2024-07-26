@@ -1,3 +1,4 @@
+import 'package:postgresql2/pool.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 import '../exception/pgmq_exception.dart';
 import '../queue/queue.dart';
@@ -22,9 +23,10 @@ abstract class Pgmq {
       {required DatabaseConnection param,
       PoolConnectionOptions? options}) async {
     try {
+      final (pool, connectionGetter) = await param
+          .connectionUsingPostgresql2(options ?? PoolConnectionOptions());
       return _Pgmp.fromPostgresql2Connection(
-          connection: await param
-              .connectionUsingPostgresql2(options ?? PoolConnectionOptions()));
+          connection: connectionGetter, pool: pool);
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(
@@ -36,4 +38,6 @@ abstract class Pgmq {
   ///
   /// The [queueName] parameter is the name of the queue to be created.
   Future<Queue> createQueue({required String queueName});
+
+  Future<void> dispose();
 }
