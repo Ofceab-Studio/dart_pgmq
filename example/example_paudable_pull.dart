@@ -21,7 +21,7 @@ Future<void> main() async {
   // print('purged');
   // await Future.delayed(Duration(seconds: 3));
 
-  final (pause, stream) = await queue.pausablePull(
+  final (pause, stream) = queue.pausablePull(
       duration: Duration(seconds: 1), visibilityDuration: Duration(seconds: 0));
 
   pause.start();
