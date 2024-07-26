@@ -36,7 +36,7 @@ Future<void> main() async {
     // print('message sent');
   }
 
-  // await Future.delayed(Duration(minutes: 3));
+  await Future.delayed(Duration(minutes: 3));
 
   stream.listen((event) async {
     final msg = event;

@@ -1,6 +1,33 @@
 import 'package:postgresql2/pool.dart' as postgresql2pool;
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
+class PoolConnectionOptions {
+  int? minConnection;
+  int? maxConnection;
+  Duration? connectionTimeout;
+  Duration? idleTimeout;
+  Duration? establishTimeout;
+  Duration? limitTimeout;
+  Duration? maxLifetime;
+  Duration? leakDetectionThreshold;
+  Duration? startTimeout;
+  Duration? stopTimeout;
+  int? limitConnections;
+
+  PoolConnectionOptions(
+      {this.connectionTimeout,
+      this.establishTimeout,
+      this.idleTimeout,
+      this.limitConnections,
+      this.limitTimeout,
+      this.maxConnection,
+      this.startTimeout,
+      this.stopTimeout,
+      this.maxLifetime,
+      this.leakDetectionThreshold,
+      this.minConnection});
+}
+
 /// The [DatabaseConnection] class provides methods to establish a connection
 /// to a `postgresql` database.
 class DatabaseConnection {
@@ -36,20 +63,20 @@ class DatabaseConnection {
   /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
   /// to configure the connection pool.
   Future<Future<postgresql2.Connection> Function()> connectionUsingPostgresql2(
-      {int? minConnection,
-      int? maxConnection,
-      Duration? connectionTimeout,
-      Duration? establishTimeout,
-      Duration? limitTimeout,
-      int? limitConnections}) async {
+      PoolConnectionOptions poolConnectionOptions) async {
     final uri = _getDBUri(ssl);
     final pool = postgresql2pool.Pool(uri,
-        connectionTimeout: connectionTimeout,
-        establishTimeout: establishTimeout,
-        limitConnections: limitConnections,
-        limitTimeout: limitTimeout,
-        minConnections: minConnection ?? 2,
-        maxConnections: maxConnection ?? 5);
+        connectionTimeout: poolConnectionOptions.connectionTimeout,
+        establishTimeout: poolConnectionOptions.establishTimeout,
+        limitConnections: poolConnectionOptions.limitConnections,
+        idleTimeout: poolConnectionOptions.idleTimeout,
+        leakDetectionThreshold: poolConnectionOptions.leakDetectionThreshold,
+        startTimeout: poolConnectionOptions.startTimeout,
+        stopTimeout: poolConnectionOptions.stopTimeout,
+        maxLifetime: poolConnectionOptions.maxLifetime,
+        limitTimeout: poolConnectionOptions.limitTimeout,
+        minConnections: poolConnectionOptions.minConnection ?? 2,
+        maxConnections: poolConnectionOptions.maxConnection ?? 5);
     await pool.start();
     return pool.connect;
   }

@@ -19,10 +19,12 @@ abstract class Pgmq {
   ///
   /// Throws a [GenericPgmqException] if there is an error connecting to the database.
   static Future<Pgmq> createConnection(
-      {required DatabaseConnection param, bool usePostgresql2 = true}) async {
+      {required DatabaseConnection param,
+      PoolConnectionOptions? options}) async {
     try {
       return _Pgmp.fromPostgresql2Connection(
-          connection: await param.connectionUsingPostgresql2());
+          connection: await param
+              .connectionUsingPostgresql2(options ?? PoolConnectionOptions()));
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(

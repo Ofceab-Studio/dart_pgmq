@@ -22,8 +22,7 @@ class _Pgmp implements Pgmq {
           final conn = await postgresql2Connection!();
           final query = 'SELECT pgmq.create(@queue);';
           await conn.execute(query, {'queue': queueName});
-          return Queue.usingPostgresql2(
-              postgresql2Connection!, conn, queueName);
+          return Queue.usingPostgresql2(postgresql2Connection!, queueName);
         }
         throw GenericPgmqException(message: 'Unable to create a queue');
       } catch (e) {

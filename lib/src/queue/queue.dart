@@ -13,9 +13,8 @@ abstract class Queue {
   /// Creates a new instance of [Queue] using the [postgresql2] package as the `postgresql` driver.
   factory Queue.usingPostgresql2(
           Future<postgresql2.Connection> Function() connection,
-          postgresql2.Connection delConnection,
           String queueName) =>
-      _QueuePostgresql2Impl(connection, queueName, delConnection);
+      _QueuePostgresql2Impl(connection, queueName);
 
   /// Sends a message to the queue with the specified payload.
   Future<int> send(Map<String, dynamic> payload);
