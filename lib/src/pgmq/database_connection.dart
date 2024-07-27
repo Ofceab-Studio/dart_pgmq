@@ -3,18 +3,69 @@ import 'package:postgresql2/pool.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
 class PoolConnectionOptions {
+  /// Minimum number of connections. When the pool is started this is the number of connections
+  /// that will initially be started. The pool will ensure that this number of connections
+  /// is always running. In typical production settings,
+  /// this should be set to be the same size as maxConnections.
+  /// Defaults to 5.
   int? minConnection;
+
+  /// Maximum number of connections.
+  /// The pool will not exceed this number of database connections.
+  /// Defaults to 10.
   int? maxConnection;
+
+  /// When client code calls Pool.connect(),
+  /// and a connection does not become available within this time, an error is returned.
+  /// Defaults to 30 seconds.
   Duration? connectionTimeout;
+
+  /// If a connection has not been used for this ammount of time
+  /// and there are more than the minimum number of connections in the pool,
+  /// then this connection will be closed.
+  /// Defaults to 10 minutes.
   Duration? idleTimeout;
+
+  /// When the pool wants to establish a new database connection
+  /// and it is not possible to complete within
+  /// this time then a warning will be logged.
+  /// Defaults to 30 seconds.
   Duration? establishTimeout;
+
+  /// If the number of connections is more than limitConnections,
+  /// the establishing of new connections will be
+  /// slowed down by waiting the duration specified in limitTimeout.
+  /// Default: 700ms.
   Duration? limitTimeout;
+
+  /// At the time that a connection is released, if it is older than
+  /// this time it will be closed.
+  /// Defaults to 30 minutes.
   Duration? maxLifetime;
+
+  /// If a connection is not returned to the pool within this time
+  /// after being obtained by pool.connect(), the a warning message will be logged.
+  /// Defaults to null, off by default.
+  ///
+  /// This setting is useful for tracking down code which leaks
+  /// connections by forgetting to call Connection.close() on them.
   Duration? leakDetectionThreshold;
+
+  /// If the pool cannot start within this time then return an error.
+  /// Defaults to 30 seconds.
   Duration? startTimeout;
+
+  /// If when stopping connections are not returned to the pool within this time,
+  /// then they will be forefully closed.
+  /// Defaults to 30 seconds.
   Duration? stopTimeout;
+
+  /// A soft limit to keep the number of connections below it.
+  /// If number of connections exceeds limitConnections, they'll be removed from
+  ///  the pool as soon as possible (about a minute after released).
   int? limitConnections;
 
+  /// Pool Connection Configuration
   PoolConnectionOptions(
       {this.connectionTimeout,
       this.establishTimeout,
