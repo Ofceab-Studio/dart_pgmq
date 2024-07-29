@@ -36,7 +36,10 @@ Future<void> main() async {
       'message':
           'message $i message $i message $i message $i message $i message $i message $i'
     };
-    messageIDs.add(await queue.send(payload));
+    final index = await queue.send(payload);
+    if (index != null) {
+      messageIDs.add(index);
+    }
     // print("Done saving ...");
   }
 
