@@ -131,6 +131,12 @@ class DatabaseConnection {
         minConnections: poolConnectionOptions.minConnection ?? 2,
         maxConnections: poolConnectionOptions.maxConnection ?? 5);
     await pool.start();
+    pool.messages.listen((event) {
+      print(
+          "Pool connection number Busy: ${pool.busyConnectionCount}, Pooled: ${pool.pooledConnectionCount}, wait queue ${pool.waitQueueLength}, Full cnnection: ${pool.connections.length}");
+      print(
+          "From pool ${event.connectionName} message:${event.message} isError: ${event.isError}");
+    });
     return (pool, pool.connect);
   }
 

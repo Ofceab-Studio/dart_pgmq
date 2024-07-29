@@ -14,26 +14,38 @@ class _QueuePostgresql2Impl implements Queue {
   _QueuePostgresql2Impl(this._getConnectionFromPool, this._queueName);
 
   @override
-  Future<int> archive(int messageID) async {
+  Future<int?> archive(int messageID) async {
     final query = "SELECT pgmq.archive(@queue,@messageID);";
 
     final values = {'queue': _queueName, 'messageID': messageID};
-    final conn = await _getConnectionFromPool();
-    final index = await conn.execute(query, values);
-    conn.close();
-    return index;
+    try {
+      final conn = await _getConnectionFromPool();
+      final index = await conn.execute(query, values);
+      conn.close();
+      return index;
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+      return null;
+    }
   }
 
   @override
-  Future<int> delete(int messageID) async {
+  Future<int?> delete(int messageID) async {
     final query = "SELECT pgmq.delete(@queue,@messageID);";
 
     final values = {'queue': _queueName, 'messageID': messageID};
 
-    final conn = await _getConnectionFromPool();
-    final index = await conn.execute(query, values);
-    conn.close();
-    return index;
+    try {
+      final conn = await _getConnectionFromPool();
+      final index = await conn.execute(query, values);
+      conn.close();
+      return index;
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+      return null;
+    }
   }
 
   @override
@@ -41,17 +53,28 @@ class _QueuePostgresql2Impl implements Queue {
     final query = "SELECT pgmq.drop_queue(@queue);";
 
     final values = {'queue': _queueName};
-    final conn = await _getConnectionFromPool();
-    await conn.execute(query, values);
-    conn.close();
+    try {
+      final conn = await _getConnectionFromPool();
+      await conn.execute(query, values);
+      conn.close();
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+    }
   }
 
   @override
   Future<Message?> pop() async {
-    final conn = await _getConnectionFromPool();
-    final message = await _pop(conn);
-    conn.close();
-    return message;
+    try {
+      final conn = await _getConnectionFromPool();
+      final message = await _pop(conn);
+      conn.close();
+      return message;
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+      return null;
+    }
   }
 
   Future<Message?> _pop(postgresql2.Connection conn) async {
@@ -89,12 +112,16 @@ class _QueuePostgresql2Impl implements Queue {
     int? maxReadNumber,
     Duration? visibilityTimeOut,
   }) async {
-    final vt = visibilityTimeOut ?? Duration(seconds: 10);
-    final conn = await _getConnectionFromPool();
+    try {
+      final vt = visibilityTimeOut ?? Duration(seconds: 10);
+      final conn = await _getConnectionFromPool();
 
-    final messages = await _read(vt, maxReadNumber ?? 1, conn);
-    conn.close();
-    return messages;
+      final messages = await _read(vt, maxReadNumber ?? 1, conn);
+      conn.close();
+      return messages;
+    } catch (e, _) {
+      return null;
+    }
   }
 
   Future<List<Message>?> _read(
@@ -117,13 +144,19 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Future<int> send(Map<String, dynamic> payload) async {
+  Future<int?> send(Map<String, dynamic> payload) async {
     final query = "SELECT * from pgmq.send(@queue, @payload)";
     final values = {'queue': _queueName, 'payload': payload};
-    final conn = await _getConnectionFromPool();
-    final id = await conn.execute(query, values);
-    conn.close();
-    return id;
+    try {
+      final conn = await _getConnectionFromPool();
+      final id = await conn.execute(query, values);
+      conn.close();
+      return id;
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+      return null;
+    }
   }
 
   @override
@@ -134,13 +167,19 @@ class _QueuePostgresql2Impl implements Queue {
   }
 
   @override
-  Future<int> purgeQueue() async {
+  Future<int?> purgeQueue() async {
     final query = "select * from pgmq.purge_queue(@queue);";
     final values = {'queue': _queueName};
-    final conn = await _getConnectionFromPool();
-    final data = await conn.query(query, values).toList();
-    conn.close();
-    return int.parse(data.first.toMap()['purge_queue'].toString());
+    try {
+      final conn = await _getConnectionFromPool();
+      final data = await conn.query(query, values).toList();
+      conn.close();
+      return int.parse(data.first.toMap()['purge_queue'].toString());
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+      return null;
+    }
   }
 
   @override
@@ -173,11 +212,17 @@ class _QueuePostgresql2Impl implements Queue {
       'duration': duration.inSeconds
     };
 
-    final conn = await _getConnectionFromPool();
-    final data = await conn.query(query, values).toList();
-    conn.close();
-    if (data.isNotEmpty) {
-      return _messageParser.messageFromRead(data.first.toMap());
+    try {
+      final conn = await _getConnectionFromPool();
+      final data = await conn.query(query, values).toList();
+      conn.close();
+      if (data.isNotEmpty) {
+        return _messageParser.messageFromRead(data.first.toMap());
+      }
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+      return null;
     }
 
     return null;
