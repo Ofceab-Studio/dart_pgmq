@@ -17,7 +17,7 @@ abstract class Queue {
       _QueuePostgresql2Impl(connection, queueName);
 
   /// Sends a message to the queue with the specified payload.
-  Future<int> send(Map<String, dynamic> payload);
+  Future<int?> send(Map<String, dynamic> payload);
 
   ///Read 1 (by default) or more messages from a queue. The [visibilityTimeOut] specifies the amount of time in seconds
   ///that the message will be invisible to other consumers after reading.
@@ -29,14 +29,14 @@ abstract class Queue {
 
   /// Archives a message in the queue.
   /// [messageID] : id of the message to archive
-  Future<int> archive(int messageID);
+  Future<int?> archive(int messageID);
 
   /// Deletes a message from the queue.
   /// [messageID] : id of the message to  delete
-  Future<int> delete(int messageID);
+  Future<int?> delete(int messageID);
 
   /// Purges all messages from the queue.
-  Future<int> purgeQueue();
+  Future<int?> purgeQueue();
 
   /// Drops the queue, effectively removing it from the database
   Future<void> dropQueue();
