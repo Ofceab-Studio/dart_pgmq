@@ -65,6 +65,17 @@ class PoolConnectionOptions {
   ///  the pool as soon as possible (about a minute after released).
   int? limitConnections;
 
+  /// Perform a simple query to check if a connection is
+  /// still valid before returning a connection from pool.connect(). Default is
+  /// true.
+  bool testConnections;
+
+  /// Once the entire pool is full of leaked
+  /// connections, close them all and restart the minimum number of connections.
+  /// Defaults to false. This must be used in combination with the leak
+  /// detection threshold setting.
+  bool restartIfAllConnectionsLeaked;
+
   /// Pool Connection Configuration
   PoolConnectionOptions(
       {this.connectionTimeout,
@@ -75,6 +86,8 @@ class PoolConnectionOptions {
       this.maxConnection,
       this.startTimeout,
       this.stopTimeout,
+      this.restartIfAllConnectionsLeaked = false,
+      this.testConnections = true,
       this.maxLifetime,
       this.leakDetectionThreshold,
       this.minConnection});
@@ -128,7 +141,10 @@ class DatabaseConnection {
         stopTimeout: poolConnectionOptions.stopTimeout,
         maxLifetime: poolConnectionOptions.maxLifetime,
         limitTimeout: poolConnectionOptions.limitTimeout,
+        testConnections: poolConnectionOptions.testConnections,
         minConnections: poolConnectionOptions.minConnection ?? 2,
+        restartIfAllConnectionsLeaked:
+            poolConnectionOptions.restartIfAllConnectionsLeaked,
         maxConnections: poolConnectionOptions.maxConnection ?? 5);
     await pool.start();
     pool.messages.listen((event) {
