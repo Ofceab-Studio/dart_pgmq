@@ -74,8 +74,10 @@ queue.pull(duration: duration);
 ```dart
 // Pausable pull
 final (pausableTimer, stream) = queue.pausablePull(duration: duration);
+
 // Start the pausable pull
 pausableTimer.start();
+
 // Pause the pulling
 pausableTimer.pause();
 ```
@@ -98,14 +100,14 @@ queue.dropQueue();
 
 ## Supported Functionalities
 
-- [x] [Sending Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#sending-messages)
+- [ ] [Sending Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#sending-messages)
   - [x] [send](https://tembo-io.github.io/pgmq/api/sql/functions/#send)
   - [ ] [send_batch](https://tembo-io.github.io/pgmq/api/sql/functions/#send_batch)
 - [ ] [Reading Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#reading-messages)
   - [x] [read](https://tembo-io.github.io/pgmq/api/sql/functions/#read)
   - [ ] [read_with_poll](https://tembo-io.github.io/pgmq/api/sql/functions/#read_with_poll)
   - [x] [pop](https://tembo-io.github.io/pgmq/api/sql/functions/#pop)
-- [x] [Deleting/Archiving Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#deletingarchiving-messages)
+- [ ] [Deleting/Archiving Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#deletingarchiving-messages)
   - [x] [delete (single)](https://tembo-io.github.io/pgmq/api/sql/functions/#delete-single)
   - [ ] [delete (batch)](https://tembo-io.github.io/pgmq/api/sql/functions/#delete-batch)
   - [x] [purge_queue](https://tembo-io.github.io/pgmq/api/sql/functions/#purge_queue)
@@ -117,7 +119,7 @@ queue.dropQueue();
   - [ ] [create_unlogged](https://tembo-io.github.io/pgmq/api/sql/functions/#create_unlogged)
   - [ ] [detach_archive](https://tembo-io.github.io/pgmq/api/sql/functions/#detach_archive)
   - [x] [drop_queue](https://tembo-io.github.io/pgmq/api/sql/functions/#drop_queue)
-- [x] [Utilities](https://tembo-io.github.io/pgmq/api/sql/functions/#utilities)
+- [ ] [Utilities](https://tembo-io.github.io/pgmq/api/sql/functions/#utilities)
   - [x] [set_vt](https://tembo-io.github.io/pgmq/api/sql/functions/#set_vt)
   - [ ] [list_queues](https://tembo-io.github.io/pgmq/api/sql/functions/#list_queues)
   - [ ] [metrics](https://tembo-io.github.io/pgmq/api/sql/functions/#metrics)
