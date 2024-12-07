@@ -186,7 +186,7 @@ class DatabaseConnection {
           onOpen: (connection) async {
             print('New connection opened');
           },
-          maxConnectionAge: Duration(days: 1)),
+          maxConnectionAge: poolOptions?.maxLifetime ?? Duration(days: 1)),
     );
 
     return pool;
