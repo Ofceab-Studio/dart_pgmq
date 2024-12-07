@@ -79,6 +79,8 @@ class PoolConnectionOptions {
 
   Duration queryTimeout;
 
+  Future<void> Function(postgres.Connection)? onPostgresImplConnectionOpened;
+
   /// Pool Connection Configuration
   PoolConnectionOptions(
       {this.connectionTimeout,
@@ -88,6 +90,7 @@ class PoolConnectionOptions {
       this.limitConnections,
       this.limitTimeout,
       this.maxConnection,
+      this.onPostgresImplConnectionOpened,
       this.startTimeout,
       this.stopTimeout,
       this.restartIfAllConnectionsLeaked = false,
@@ -183,9 +186,7 @@ class DatabaseConnection {
           connectTimeout:
               poolOptions?.connectionTimeout ?? Duration(minutes: 1),
           maxConnectionCount: poolOptions?.maxConnection ?? 6,
-          onOpen: (connection) async {
-            print('New connection opened');
-          },
+          onOpen: poolOptions?.onPostgresImplConnectionOpened,
           maxConnectionAge: poolOptions?.maxLifetime ?? Duration(days: 1)),
     );
 
