@@ -13,6 +13,7 @@ dependencies:
   pausable_timer: ^3.1.0+3
   postgresql2: ^1.6.2
   postgres: ^3.4.4
+  dotenv: ^4.2.0
   # path: ^1.8.0
 
 dev_dependencies:

@@ -77,11 +77,14 @@ class PoolConnectionOptions {
   /// detection threshold setting.
   bool restartIfAllConnectionsLeaked;
 
+  Duration queryTimeout;
+
   /// Pool Connection Configuration
   PoolConnectionOptions(
       {this.connectionTimeout,
       this.establishTimeout,
       this.idleTimeout,
+      this.queryTimeout = const Duration(seconds: 20),
       this.limitConnections,
       this.limitTimeout,
       this.maxConnection,
@@ -161,19 +164,32 @@ class DatabaseConnection {
   ///
   /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
   /// to configure the connection pool.
-  Future<postgres.Connection> connectionUsingPostgres(
-      {int? minConnection, int? maxConnection}) async {
-    return await postgres.Connection.open(
+  Future<postgres.Pool> connectionUsingPostgres(
+      {PoolConnectionOptions? poolOptions}) async {
+    final pool = postgres.Pool.withEndpoints(
+      [
         postgres.Endpoint(
           host: host,
           database: database,
           username: username,
           password: password,
           port: port,
-        ),
-        settings: postgres.ConnectionSettings(
+        )
+      ],
+      settings: postgres.PoolSettings(
           sslMode: ssl ? postgres.SslMode.require : postgres.SslMode.disable,
-        ));
+          queryTimeout:
+              poolOptions?.queryTimeout ?? Duration(milliseconds: 500),
+          connectTimeout:
+              poolOptions?.connectionTimeout ?? Duration(minutes: 1),
+          maxConnectionCount: poolOptions?.maxConnection ?? 6,
+          onOpen: (connection) async {
+            print('New connection opened');
+          },
+          maxConnectionAge: Duration(days: 1)),
+    );
+
+    return pool;
   }
 
   /// Returns the `postgresql` connection URI based on the SSL configuration.

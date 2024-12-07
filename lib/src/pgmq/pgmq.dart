@@ -33,7 +33,7 @@ abstract class Pgmq {
       }
 
       return _Pgmp.fromPostgresqlConnection(
-          connection: await param.connectionUsingPostgres());
+          pool: await param.connectionUsingPostgres(poolOptions: options));
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(

@@ -3,7 +3,7 @@ part of 'queue.dart';
 /// An implementation of the [Queue] abstract class with [prostgres] package
 /// for managing message queues
 class _QueuePostgresImpl implements Queue {
-  final Connection _connection;
+  final Pool _connection;
   final String _queueName;
   Statement? _readStatement;
   Statement? _popStatement;
@@ -106,7 +106,7 @@ class _QueuePostgresImpl implements Queue {
       () async {
         _readStatement ??= await _connection.prepare(Sql(query));
         final result = await _readStatement!
-            .run([_queueName, vt.inMilliseconds, maxReadNumber]);
+            .run([_queueName, vt.inSeconds, maxReadNumber]);
 
         return result
             .take(maxReadNumber)
@@ -134,6 +134,7 @@ class _QueuePostgresImpl implements Queue {
     for (final controller in controllers) {
       await controller.close();
     }
+    _connection.close();
   }
 
   @override

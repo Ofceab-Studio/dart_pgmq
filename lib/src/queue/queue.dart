@@ -20,8 +20,8 @@ abstract class Queue {
           String queueName) =>
       _QueuePostgresql2Impl(connection, queueName);
 
-  factory Queue.usingPostgres(Connection connection, String queueName) =>
-      _QueuePostgresImpl(connection, queueName);
+  factory Queue.usingPostgres(Pool pool, String queueName) =>
+      _QueuePostgresImpl(pool, queueName);
 
   /// Sends a message to the queue with the specified payload.
   Future<int?> send(Map<String, dynamic> payload);
