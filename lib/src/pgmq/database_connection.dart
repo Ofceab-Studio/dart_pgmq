@@ -1,3 +1,4 @@
+import 'package:postgres/postgres.dart' as postgres;
 import 'package:postgresql2/pool.dart' as postgresql2pool;
 import 'package:postgresql2/pool.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
@@ -154,6 +155,25 @@ class DatabaseConnection {
           "From pool ${event.connectionName} message:${event.message} isError: ${event.isError}");
     });
     return (pool, pool.connect);
+  }
+
+  /// Establishes a connection to the `postgresql` database using the [postgres] package.
+  ///
+  /// You can specify (optionally) the [minConnection] and [maxConnection] parameters
+  /// to configure the connection pool.
+  Future<postgres.Connection> connectionUsingPostgres(
+      {int? minConnection, int? maxConnection}) async {
+    return await postgres.Connection.open(
+        postgres.Endpoint(
+          host: host,
+          database: database,
+          username: username,
+          password: password,
+          port: port,
+        ),
+        settings: postgres.ConnectionSettings(
+          sslMode: ssl ? postgres.SslMode.require : postgres.SslMode.disable,
+        ));
   }
 
   /// Returns the `postgresql` connection URI based on the SSL configuration.

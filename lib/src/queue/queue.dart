@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:dart_pgmq/src/exception/error_catcher.dart';
 import 'package:dart_pgmq/src/message/message.dart';
 import 'package:pausable_timer/pausable_timer.dart';
+import 'package:postgres/postgres.dart';
 import 'package:postgresql2/postgresql.dart' as postgresql2;
 
 part 'queue_postgresql2_impl.dart';
+part 'queue_postgres_impl.dart';
 
 /// An abstract class that represents a `postgresql` message queue.
 abstract class Queue {
@@ -15,6 +19,9 @@ abstract class Queue {
           Future<postgresql2.Connection> Function() connection,
           String queueName) =>
       _QueuePostgresql2Impl(connection, queueName);
+
+  factory Queue.usingPostgres(Connection connection, String queueName) =>
+      _QueuePostgresImpl(connection, queueName);
 
   /// Sends a message to the queue with the specified payload.
   Future<int?> send(Map<String, dynamic> payload);

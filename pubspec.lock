@@ -369,6 +369,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  postgres:
+    dependency: "direct main"
+    description:
+      name: postgres
+      sha256: d646bdc6f093babfa3337071c6f4ca2feabefdb7a6d18fc89f0f517c8d2e0819
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.4"
   postgresql2:
     dependency: "direct main"
     description:
