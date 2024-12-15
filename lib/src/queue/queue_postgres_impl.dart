@@ -35,7 +35,7 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Future<int?> delete(int messageID) async {
-    final query = "SELECT pgmq.delete(\$1, \$2);";
+    final query = "SELECT pgmq.delete(\$1::TEXT, \$2::BIGINT);";
 
     return ErrorCatcher.tryCatch(
       () async {
