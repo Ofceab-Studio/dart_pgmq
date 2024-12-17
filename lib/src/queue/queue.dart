@@ -4,9 +4,7 @@ import 'package:dart_pgmq/src/exception/error_catcher.dart';
 import 'package:dart_pgmq/src/message/message.dart';
 import 'package:pausable_timer/pausable_timer.dart';
 import 'package:postgres/postgres.dart';
-import 'package:postgresql2/postgresql.dart' as postgresql2;
 
-part 'queue_postgresql2_impl.dart';
 part 'queue_postgres_impl.dart';
 
 /// An abstract class that represents a `postgresql` message queue.
@@ -14,13 +12,7 @@ abstract class Queue {
   /// A [StreamController] that allows for listening to incoming messages from the queue.
   List<StreamController<Message>> get controllers;
 
-  /// Creates a new instance of [Queue] using the [postgresql2] package as the `postgresql` driver.
-  factory Queue.usingPostgresql2(
-          Future<postgresql2.Connection> Function() connection,
-          String queueName) =>
-      _QueuePostgresql2Impl(connection, queueName);
-
-  factory Queue.usingPostgres(Pool pool, String queueName) =>
+  factory Queue.create(Pool pool, String queueName) =>
       _QueuePostgresImpl(pool, queueName);
 
   /// Sends a message to the queue with the specified payload.

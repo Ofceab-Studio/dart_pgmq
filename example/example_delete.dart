@@ -15,10 +15,7 @@ Future<void> main() async {
   final pgmq = await Pgmq.createConnection(
       param: databaseParam,
       options: PoolConnectionOptions(
-          maxConnection: 5,
-          minConnection: 5,
-          limitTimeout: Duration(minutes: 30),
-          idleTimeout: Duration(hours: 1)));
+          maxConnection: 5, idleTimeout: Duration(hours: 1)));
 
   print("Initialized in ${a.elapsed.inMilliseconds}");
 

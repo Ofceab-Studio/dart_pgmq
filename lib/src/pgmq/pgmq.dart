@@ -1,6 +1,4 @@
-import 'package:postgres/postgres.dart' as postgres;
-import 'package:postgresql2/pool.dart';
-import 'package:postgresql2/postgresql.dart' as postgresql2;
+import 'package:postgres/postgres.dart';
 import '../exception/pgmq_exception.dart';
 import '../queue/queue.dart';
 import 'database_connection.dart';
@@ -25,15 +23,7 @@ abstract class Pgmq {
       PoolConnectionOptions? options,
       bool usePostgres = false}) async {
     try {
-      if (!usePostgres) {
-        final (pool, connectionGetter) = await param
-            .connectionUsingPostgresql2(options ?? PoolConnectionOptions());
-        return _Pgmp.fromPostgresql2Connection(
-            connection: connectionGetter, pool: pool);
-      }
-
-      return _Pgmp.fromPostgresqlConnection(
-          pool: await param.connectionUsingPostgres(poolOptions: options));
+      return _Pgmp._(pool: await param.connect(poolOptions: options));
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(

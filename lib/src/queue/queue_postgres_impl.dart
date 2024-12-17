@@ -5,12 +5,6 @@ part of 'queue.dart';
 class _QueuePostgresImpl implements Queue {
   final Pool _connection;
   final String _queueName;
-  Statement? _readStatement;
-  Statement? _popStatement;
-  Statement? _archiveStatement;
-  Statement? _deleteStatement;
-  Statement? _setVisibilityStatement;
-  Statement? _purgeStatement;
 
   final MessageParser _messageParser = MessageParser();
 
@@ -21,13 +15,12 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Future<int?> archive(int messageID) async {
-    final query = "SELECT pgmq.archive(\$1, \$2);";
+    final query = "SELECT pgmq.archive(@queue,@msgID);";
 
     return ErrorCatcher.tryCatch(
       () async {
-        _archiveStatement ??= await _connection.prepare(Sql(query));
-        final result = await _archiveStatement!.run([_queueName, messageID]);
-
+        final result = await _connection.execute(Sql.named(query),
+            parameters: {'queue': _queueName, 'msgID': messageID});
         return result.affectedRows;
       },
     );
@@ -35,13 +28,12 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Future<int?> delete(int messageID) async {
-    final query = "SELECT pgmq.delete(\$1::TEXT, \$2::BIGINT);";
+    final query = "SELECT pgmq.delete(@queue::TEXT, @msgID::BIGINT);";
 
     return ErrorCatcher.tryCatch(
       () async {
-        _deleteStatement ??= await _connection.prepare(Sql(query));
-        final result = await _deleteStatement!.run([_queueName, messageID]);
-
+        final result = await _connection.execute(Sql.named(query),
+            parameters: {'queue': _queueName, 'msgID': messageID});
         return result.affectedRows;
       },
     );
@@ -49,23 +41,23 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Future<void> dropQueue() async {
-    final query = "SELECT pgmq.drop_queue(\$1);";
+    final query = "SELECT pgmq.drop_queue(@queue);";
 
     return ErrorCatcher.tryCatch(
       () async {
-        final stmt = await _connection.prepare(Sql(query));
-        await stmt.run([_queueName]);
+        await _connection
+            .execute(Sql.named(query), parameters: {'queue': _queueName});
       },
     );
   }
 
   @override
   Future<Message?> pop() async {
-    final query = "SELECT row_to_json(pgmq.pop(\$1));";
+    final query = "SELECT row_to_json(pgmq.pop(@queue));";
     return ErrorCatcher.tryCatch(
       () async {
-        _popStatement ??= await _connection.prepare(Sql(query));
-        final result = await _popStatement!.run([_queueName]);
+        final result = await _connection
+            .execute(Sql.named(query), parameters: {'queue': _queueName});
         if (result.isEmpty) {
           return null;
         }
@@ -101,13 +93,14 @@ class _QueuePostgresImpl implements Queue {
   }
 
   Future<List<Message>?> _read(Duration vt, int maxReadNumber) async {
-    final query = "SELECT * FROM pgmq.read(\$1, \$2, \$3);";
+    final query = "SELECT * FROM pgmq.read(@queue,@vt,@maxReadNumber);";
     return ErrorCatcher.tryCatch(
       () async {
-        _readStatement ??= await _connection.prepare(Sql(query));
-        final result = await _readStatement!
-            .run([_queueName, vt.inSeconds, maxReadNumber]);
-
+        final result = await _connection.execute(Sql.named(query), parameters: {
+          'queue': _queueName,
+          'vt': vt.inSeconds,
+          'maxReadNumber': maxReadNumber
+        });
         return result
             .take(maxReadNumber)
             .map((msg) => _messageParser.messageFromRead(msg.toColumnMap()))
@@ -118,12 +111,12 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Future<int?> send(Map<String, dynamic> payload) async {
-    final query = "SELECT * from pgmq.send(\$1, \$2)";
+    final query = "SELECT * from pgmq.send(@queue,@payload)";
 
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection
-            .execute(query, parameters: [_queueName, json.encode(payload)]);
+        final result = await _connection.execute(Sql.named(query),
+            parameters: {'queue': _queueName, 'payload': json.encode(payload)});
         return result.affectedRows;
       },
     );
@@ -139,11 +132,12 @@ class _QueuePostgresImpl implements Queue {
 
   @override
   Future<int?> purgeQueue() async {
-    final query = "select * from pgmq.purge_queue(\$1);";
+    final query = "select * from pgmq.purge_queue(@queue);";
     return ErrorCatcher.tryCatch(
       () async {
-        _purgeStatement ??= await _connection.prepare(Sql(query));
-        final result = await _purgeStatement!.run([_queueName]);
+        final result = await _connection
+            .execute(Sql.named(query), parameters: {'queue': _queueName});
+
         final v =
             int.parse(result.first.toColumnMap()['purge_queue'].toString());
         return v;
@@ -160,11 +154,16 @@ class _QueuePostgresImpl implements Queue {
     controllers.add(stream);
 
     final pausableTimer = PausableTimer.periodic(duration, () async {
-      final message = useReadMethod
-          ? await read(visibilityTimeOut: visibilityDuration)
-          : [await pop()];
-      if (message != null && message.isNotEmpty) {
-        stream.add(message.first!);
+      List<Message> messages = [];
+      if (useReadMethod) {
+        final msg = await read(visibilityTimeOut: visibilityDuration);
+        messages = msg ?? <Message>[];
+      } else {
+        final msg = await pop();
+        messages = msg != null ? [msg] : <Message>[];
+      }
+      if (messages.isNotEmpty) {
+        stream.add(messages.first);
       }
     });
 
@@ -174,13 +173,15 @@ class _QueuePostgresImpl implements Queue {
   @override
   Future<Message?> setVisibilityTimeout(
       {required int messageID, required Duration duration}) async {
-    final query = "select * from pgmq.set_vt(\$1,\$2,\$3);";
+    final query = "select * from pgmq.set_vt(@queue,@msgID,@vt);";
 
     return ErrorCatcher.tryCatch(
       () async {
-        _setVisibilityStatement ??= await _connection.prepare(Sql(query));
-        final result = await _setVisibilityStatement!
-            .run([_queueName, messageID, duration.inSeconds]);
+        final result = await _connection.execute(Sql.named(query), parameters: {
+          'queue': _queueName,
+          'msgID': messageID,
+          'vt': duration.inSeconds
+        });
         return _messageParser.messageFromRead(result.first.toColumnMap());
       },
     );
