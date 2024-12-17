@@ -17,7 +17,6 @@ Future<void> main() async {
       // Create a connexion
       final pgmq = await Pgmq.createConnection(
           param: databaseParam,
-          usePostgres: true,
           options:
               PoolConnectionOptions(queryTimeout: Duration(milliseconds: 500)));
 
