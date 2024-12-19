@@ -19,9 +19,16 @@ class _QueuePostgresImpl implements Queue {
 
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection.execute(Sql.named(query),
-            parameters: {'queue': _queueName, 'msgID': messageID});
-        return result.affectedRows;
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection.execute(Sql.named(query),
+                parameters: {'queue': _queueName, 'msgID': messageID});
+            await connection.close();
+            return result.affectedRows;
+          },
+        );
+
+        return result;
       },
     );
   }
@@ -32,9 +39,15 @@ class _QueuePostgresImpl implements Queue {
 
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection.execute(Sql.named(query),
-            parameters: {'queue': _queueName, 'msgID': messageID});
-        return result.affectedRows;
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection.execute(Sql.named(query),
+                parameters: {'queue': _queueName, 'msgID': messageID});
+            await connection.close();
+            return result.affectedRows;
+          },
+        );
+        return result;
       },
     );
   }
@@ -45,8 +58,13 @@ class _QueuePostgresImpl implements Queue {
 
     return ErrorCatcher.tryCatch(
       () async {
-        await _connection
-            .execute(Sql.named(query), parameters: {'queue': _queueName});
+        await _connection.withConnection(
+          (connection) async {
+            await connection
+                .execute(Sql.named(query), parameters: {'queue': _queueName});
+            await connection.close();
+          },
+        );
       },
     );
   }
@@ -56,8 +74,15 @@ class _QueuePostgresImpl implements Queue {
     final query = "SELECT row_to_json(pgmq.pop(@queue));";
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection
-            .execute(Sql.named(query), parameters: {'queue': _queueName});
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection
+                .execute(Sql.named(query), parameters: {'queue': _queueName});
+            await connection.close();
+            return result;
+          },
+        );
+
         if (result.isEmpty) {
           return null;
         }
@@ -96,11 +121,19 @@ class _QueuePostgresImpl implements Queue {
     final query = "SELECT * FROM pgmq.read(@queue,@vt,@maxReadNumber);";
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection.execute(Sql.named(query), parameters: {
-          'queue': _queueName,
-          'vt': vt.inSeconds,
-          'maxReadNumber': maxReadNumber
-        });
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection.execute(Sql.named(query),
+                parameters: {
+                  'queue': _queueName,
+                  'vt': vt.inSeconds,
+                  'maxReadNumber': maxReadNumber
+                });
+            await connection.close();
+            return result;
+          },
+        );
+
         return result
             .take(maxReadNumber)
             .map((msg) => _messageParser.messageFromRead(msg.toColumnMap()))
@@ -115,9 +148,17 @@ class _QueuePostgresImpl implements Queue {
 
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection.execute(Sql.named(query),
-            parameters: {'queue': _queueName, 'payload': json.encode(payload)});
-        return result.affectedRows;
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection.execute(Sql.named(query),
+                parameters: {
+                  'queue': _queueName,
+                  'payload': json.encode(payload)
+                });
+            return result.affectedRows;
+          },
+        );
+        return result;
       },
     );
   }
@@ -135,8 +176,14 @@ class _QueuePostgresImpl implements Queue {
     final query = "select * from pgmq.purge_queue(@queue);";
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection
-            .execute(Sql.named(query), parameters: {'queue': _queueName});
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection
+                .execute(Sql.named(query), parameters: {'queue': _queueName});
+            await connection.close();
+            return result;
+          },
+        );
 
         final v =
             int.parse(result.first.toColumnMap()['purge_queue'].toString());
@@ -177,11 +224,19 @@ class _QueuePostgresImpl implements Queue {
 
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _connection.execute(Sql.named(query), parameters: {
-          'queue': _queueName,
-          'msgID': messageID,
-          'vt': duration.inSeconds
-        });
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await connection.execute(Sql.named(query),
+                parameters: {
+                  'queue': _queueName,
+                  'msgID': messageID,
+                  'vt': duration.inSeconds
+                });
+            connection.close();
+            return result;
+          },
+        );
+
         return _messageParser.messageFromRead(result.first.toColumnMap());
       },
     );

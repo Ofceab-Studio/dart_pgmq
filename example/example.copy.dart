@@ -30,11 +30,10 @@ Future<void> main() async {
   runZonedGuarded(
     () async {
       //  Create a queue
-      final queue =
-          await pgmq.createQueue(queueName: 'orange_subscription_queue');
+      final queue = await pgmq.createQueue(queueName: 'subscription_queue_1');
 
       final mtnqueue =
-          await pgmq.createQueue(queueName: 'mtn_subscription_queue');
+          await pgmq.createQueue(queueName: 'subscription_queue_2');
 
       final (pause, stream) =
           queue.pausablePull(duration: Duration(milliseconds: 500));
@@ -51,7 +50,8 @@ Future<void> main() async {
 
       streammtn.listen(
         (event) async {
-          print('MTN MessageID: ${event.messageID}\n ${event.payload}');
+          print('MessageID: ${event.messageID}\n ${event.payload}');
+
           await mtnqueue.delete(event.messageID);
         },
       );
