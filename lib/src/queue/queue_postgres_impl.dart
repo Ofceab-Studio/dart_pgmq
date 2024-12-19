@@ -232,7 +232,7 @@ class _QueuePostgresImpl implements Queue {
                   'msgID': messageID,
                   'vt': duration.inSeconds
                 });
-            connection.close();
+            await connection.close();
             return result;
           },
         );
