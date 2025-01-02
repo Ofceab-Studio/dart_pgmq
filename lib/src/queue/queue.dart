@@ -4,6 +4,8 @@ import 'package:dart_pgmq/src/exception/error_catcher.dart';
 import 'package:dart_pgmq/src/message/message.dart';
 import 'package:pausable_timer/pausable_timer.dart';
 import 'package:postgres/postgres.dart';
+// ignore: depend_on_referenced_packages
+import 'package:async/async.dart';
 
 part 'queue_postgres_impl.dart';
 

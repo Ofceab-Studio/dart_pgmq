@@ -17,12 +17,6 @@ class PoolConnectionOptions {
   /// Defaults to 30 seconds.
   Duration? connectionTimeout;
 
-  /// If a connection has not been used for this ammount of time
-  /// and there are more than the minimum number of connections in the pool,
-  /// then this connection will be closed.
-  /// Defaults to 10 minutes.
-  Duration? idleTimeout;
-
   /// When the pool wants to establish a new database connection
   /// and it is not possible to complete within
   /// this time then a warning will be logged.
@@ -38,8 +32,6 @@ class PoolConnectionOptions {
   /// Pool Connection Configuration
   PoolConnectionOptions({
     this.connectionTimeout = const Duration(minutes: 1),
-    this.establishTimeout,
-    this.idleTimeout,
     this.onConnectionOpened,
     this.maxLifetime = const Duration(days: 1),
     this.queryTimeout = const Duration(seconds: 1),
@@ -96,6 +88,7 @@ class DatabaseConnection {
           connectTimeout: poolOptions?.connectionTimeout,
           maxConnectionCount: poolOptions?.maxConnection,
           onOpen: poolOptions?.onConnectionOpened,
+          queryMode: postgres.QueryMode.extended,
           maxConnectionAge: poolOptions?.maxLifetime),
     );
 

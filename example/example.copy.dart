@@ -17,14 +17,14 @@ Future<void> main() async {
   final pgmq = await Pgmq.createConnection(
       param: databaseParam,
       options: PoolConnectionOptions(
-          connectionTimeout: Duration(seconds: 7),
-          queryTimeout: Duration(seconds: 7),
-          establishTimeout: Duration(seconds: 15),
-          onConnectionOpened: (connection) async {
-            print('New connection opened ${connection.isOpen}');
-          },
-          maxLifetime: Duration(days: 1),
-          idleTimeout: Duration(hours: 1)));
+        connectionTimeout: Duration(seconds: 2),
+        queryTimeout: Duration(seconds: 2),
+        maxConnection: 3,
+        maxLifetime: Duration(days: 1),
+        onConnectionOpened: (connection) async {
+          print('New connection opened ${connection.isOpen}');
+        },
+      ));
   // final pgmq1 = await Pgmq.createConnection(param: databaseParam);
 
   runZonedGuarded(
@@ -32,14 +32,8 @@ Future<void> main() async {
       //  Create a queue
       final queue = await pgmq.createQueue(queueName: 'subscription_queue_1');
 
-      final mtnqueue =
-          await pgmq.createQueue(queueName: 'subscription_queue_2');
-
       final (pause, stream) =
           queue.pausablePull(duration: Duration(milliseconds: 500));
-
-      final (pausemtn, streammtn) =
-          mtnqueue.pausablePull(duration: Duration(milliseconds: 500));
 
       stream.listen(
         (event) async {
@@ -47,20 +41,9 @@ Future<void> main() async {
           await queue.delete(event.messageID);
         },
       );
-
-      streammtn.listen(
-        (event) async {
-          print('MessageID: ${event.messageID}\n ${event.payload}');
-
-          await mtnqueue.delete(event.messageID);
-        },
-      );
-
-      pause.start();
-      pausemtn.start();
     },
     (error, stack) {
-      print(error);
+      print('[[ $error\n$stack]]');
     },
   );
 }
