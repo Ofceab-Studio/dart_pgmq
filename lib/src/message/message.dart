@@ -83,7 +83,7 @@ class MessageParser {
   /// Parses a message from the result of a [read] operation.
   Message messageFromRead(Map<dynamic, dynamic> message) {
     return Message(
-        messageID: message['msg_id'],
+        messageID: int.parse(message['msg_id'].toString()),
         readCount: message['read_ct'],
         enqueueDate: DateTime.tryParse(message['enqueued_at'].toString()),
         visibleAt: DateTime.tryParse(message['vt'].toString()),

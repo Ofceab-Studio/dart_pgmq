@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dart_pgmq/src/exception/error_catcher.dart';
 import 'package:dart_pgmq/src/message/message.dart';
+import 'package:orm/orm.dart';
 import 'package:pausable_timer/pausable_timer.dart';
 import 'package:postgres/postgres.dart';
 // ignore: depend_on_referenced_packages
 import 'package:async/async.dart';
 
 part 'queue_postgres_impl.dart';
+part 'prisma_orm_postgres_impl.dart';
 
 /// An abstract class that represents a `postgresql` message queue.
 abstract class Queue {
@@ -16,6 +18,10 @@ abstract class Queue {
 
   factory Queue.create(Pool pool, String queueName) =>
       _QueuePostgresImpl(pool, queueName);
+
+  factory Queue.createUsingPrismaClient(
+          BasePrismaClient prismaClient, String queueName) =>
+      _PrismaOrmPostgresImpl(prismaClient, queueName);
 
   /// Sends a message to the queue with the specified payload.
   Future<int?> send(Map<String, dynamic> payload);

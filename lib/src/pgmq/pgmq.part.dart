@@ -32,3 +32,30 @@ class _Pgmp implements Pgmq {
     await pool.close();
   }
 }
+
+class _PgmpPrisma implements Pgmq {
+  final BasePrismaClient prismaClient;
+
+  const _PgmpPrisma._({required this.prismaClient});
+
+  @override
+  Future<Queue> createQueue({required String queueName}) async {
+    if (queueName.isEmpty) {
+      throw GenericPgmqException(
+          message: 'Queue should not be created with empty name');
+    } else {
+      try {
+        final query = 'SELECT pgmq.create(\$1);';
+        await prismaClient.$raw.execute(query, [queueName]);
+        return Queue.createUsingPrismaClient(prismaClient, queueName);
+      } catch (e) {
+        rethrow;
+      }
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    await prismaClient.$disconnect();
+  }
+}

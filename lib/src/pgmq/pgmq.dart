@@ -1,3 +1,4 @@
+import 'package:orm/orm.dart';
 import 'package:postgres/postgres.dart';
 import '../exception/pgmq_exception.dart';
 import '../queue/queue.dart';
@@ -20,9 +21,22 @@ abstract class Pgmq {
   /// Throws a [GenericPgmqException] if there is an error connecting to the database.
   static Future<Pgmq> createConnection(
       {required DatabaseConnection param,
-      PoolConnectionOptions? options}) async {
+      PoolConnectionOptions? options,
+      bool usePrisma = false}) async {
     try {
       return _Pgmp._(pool: await param.connect(poolOptions: options));
+    } catch (e, stack) {
+      print(stack);
+      throw GenericPgmqException(
+          message: 'Unable to connect to database\n${e.toString()}');
+    }
+  }
+
+  static Pgmq createConnectionUsingPrisma({
+    required BasePrismaClient prismaClient,
+  }) {
+    try {
+      return _PgmpPrisma._(prismaClient: prismaClient);
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(
