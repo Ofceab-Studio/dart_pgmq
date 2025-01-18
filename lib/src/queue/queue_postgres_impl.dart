@@ -6,8 +6,6 @@ class _QueuePostgresImpl implements Queue {
   final Pool _connection;
   final String _queueName;
 
-  final MessageParser _messageParser = MessageParser();
-
   static const _kDefaultTimeout = Duration(seconds: 7);
 
   @override
@@ -123,8 +121,7 @@ class _QueuePostgresImpl implements Queue {
           return null;
         }
 
-        return _messageParser
-            .messageFromRead(result.first.toColumnMap()['row_to_json']);
+        return Message.fromJson(result.first.toColumnMap()['row_to_json']);
       },
     );
   }
@@ -180,7 +177,7 @@ class _QueuePostgresImpl implements Queue {
 
         return result
             .take(maxReadNumber)
-            .map((msg) => _messageParser.messageFromRead(msg.toColumnMap()))
+            .map((msg) => Message.fromJson(msg.toColumnMap()))
             .toList();
       },
     );
@@ -295,7 +292,7 @@ class _QueuePostgresImpl implements Queue {
           return null;
         }
 
-        return _messageParser.messageFromRead(result.first.toColumnMap());
+        return Message.fromJson(result.first.toColumnMap());
       },
     );
   }

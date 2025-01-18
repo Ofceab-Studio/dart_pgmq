@@ -22,17 +22,23 @@ class Message {
       required this.enqueueDate,
       required this.visibleAt,
       required this.payload});
-}
 
-/// A utility class for parsing messages from a message queue.
-class MessageParser {
-  /// Parses a message from the result of a [read] operation.
-  Message messageFromRead(Map<dynamic, dynamic> message) {
+  factory Message.fromJson(Map<dynamic, dynamic> message) {
     return Message(
         messageID: int.parse(message['msg_id'].toString()),
         readCount: message['read_ct'],
         enqueueDate: DateTime.tryParse(message['enqueued_at'].toString()),
         visibleAt: DateTime.tryParse(message['vt'].toString()),
         payload: message['message']);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'msg_id': messageID,
+      'read_ct': readCount,
+      'enqueued_at': enqueueDate.toString(),
+      'vt': visibleAt.toString(),
+      'message': payload
+    };
   }
 }

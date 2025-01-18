@@ -6,8 +6,6 @@ class _PrismaOrmPostgresImpl implements Queue {
   final String _queueName;
   final BasePrismaClient _prismaClient;
 
-  final MessageParser _messageParser = MessageParser();
-
   @override
   final List<StreamController<Message>> controllers = [];
 
@@ -60,7 +58,7 @@ class _PrismaOrmPostgresImpl implements Queue {
           return null;
         }
 
-        return _messageParser.messageFromRead(
+        return Message.fromJson(
             result.first['row_to_json'] as Map<dynamic, dynamic>);
       },
     );
@@ -109,7 +107,7 @@ class _PrismaOrmPostgresImpl implements Queue {
 
         return result
             .take(maxReadNumber)
-            .map((msg) => _messageParser.messageFromRead(msg))
+            .map((msg) => Message.fromJson(msg))
             .toList();
       },
     );
@@ -189,7 +187,7 @@ class _PrismaOrmPostgresImpl implements Queue {
           return null;
         }
 
-        return _messageParser.messageFromRead(result.first);
+        return Message.fromJson(result.first);
       },
     );
   }
