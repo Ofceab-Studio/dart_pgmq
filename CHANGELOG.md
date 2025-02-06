@@ -13,5 +13,5 @@ Initial version.
 - feat: Make `Queue` disposable.
 - feat: Use postgres as client for pgmq
 - feat: Add cancellation on request execution.
-- feat: Add support of prisma to manage `Queue`.
+- feat: Add support of prisma as postgres database  client
 - feat: Add fromJson and toJson on `Messsage`.
