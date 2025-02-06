@@ -3,11 +3,11 @@ import 'package:dart_pgmq/dart_pgmq.dart';
 Future<void> main() async {
   // Create a DatabaseConnection
   final databaseParam = DatabaseConnection(
-      host: 'fallaciously-sterling-slug.data-1.use1.tembo.io',
+      host: 'localhost',
       database: 'postgres',
-      password: 'SvPlgCGC2o57KGGK',
+      password: 'postgres',
       username: 'postgres',
-      ssl: true,
+      ssl: false,
       port: 5432);
 
   // Create a connexion
@@ -17,31 +17,27 @@ Future<void> main() async {
   final queue = await pgmq.createQueue(queueName: 'test');
 
   // Purge queue
-  // await queue.purgeQueue();
-  // print('purged');
+  await queue.purgeQueue();
+  print('purged');
   // await Future.delayed(Duration(seconds: 3));
 
-  final (pause, stream) = queue.pausablePull(
-      duration: Duration(seconds: 1), visibilityDuration: Duration(seconds: 0));
-
-  pause.start();
+  final puller = queue.pull(duration: Duration(seconds: 1));
 
   // Send message
-  // for (var i = 0; i < 1000; i++) {
-  //   final payload = {'id': i, 'message': 'message $i'};
-  //   await Future.delayed(Duration(seconds: 5));
-  //   queue.send(payload);
-  //   print('message sent $i');
-  // }
+  for (var i = 0; i < 10; i++) {
+    final payload = {'id': i, 'message': 'message $i'};
+    queue.send(payload);
+    // print('message sent');
+  }
 
   // await Future.delayed(Duration(minutes: 3));
 
-  stream.listen((event) async {
+  puller.listen((event) async {
     final msg = event;
     final start = DateTime.now();
     await queue.delete(msg.messageID);
     final end = DateTime.now();
-    print('time taken : ${end.difference(start).inMilliseconds}');
+    print('time taken : ${end.difference(start).inMilliseconds}s');
     // duration.stop();
   });
 }

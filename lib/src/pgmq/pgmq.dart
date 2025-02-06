@@ -14,15 +14,10 @@ abstract class Pgmq {
   /// The [param] parameter is an instance of [DatabaseConnection] that contains
   /// the necessary information for connecting to the `postgresql` database.
   ///
-  /// The [usePostgresql2] parameter determines whether to use the `postgresql2`
-  /// package or the `postgres` package for the database connection. By default,
-  /// it uses the `postgresql2` package (recommended).
-  ///
   /// Throws a [GenericPgmqException] if there is an error connecting to the database.
   static Future<Pgmq> createConnection(
       {required DatabaseConnection param,
-      PoolConnectionOptions? options,
-      bool usePrisma = false}) async {
+      PoolConnectionOptions? options}) async {
     try {
       return _Pgmp._(pool: await param.connect(poolOptions: options));
     } catch (e, stack) {
@@ -32,11 +27,12 @@ abstract class Pgmq {
     }
   }
 
+  /// Creates a new connection using [Prisma].
   static Pgmq createConnectionUsingPrisma({
     required BasePrismaClient prismaClient,
   }) {
     try {
-      return _PgmpPrisma._(prismaClient: prismaClient);
+      return _PgmqPrisma._(prismaClient: prismaClient);
     } catch (e, stack) {
       print(stack);
       throw GenericPgmqException(

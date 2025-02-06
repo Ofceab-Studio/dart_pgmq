@@ -5,7 +5,7 @@ Future<void> main() async {
   final databaseParam = DatabaseConnection(
       host: 'localhost',
       database: 'postgres',
-      password: 'password',
+      password: 'postgres',
       username: 'postgres',
       ssl: false,
       port: 5432);
@@ -18,7 +18,7 @@ Future<void> main() async {
         maxConnection: 5,
       ));
 
-  print("Initialized in ${a.elapsed.inMilliseconds}");
+  print("Initialized in ${a.elapsed.inMilliseconds}ms");
 
   //  Create a queue
   final queue = await pgmq.createQueue(queueName: 'test');

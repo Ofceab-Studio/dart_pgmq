@@ -1,7 +1,7 @@
 ## Dart PGMQ 
 A dart client for Postgres Message Queue ([PGMQ](https://github.com/tembo-io/pgmq)).
 
-### Usage
+### Setup
 
 ```bash
 # Start a Postgres instance
@@ -23,7 +23,9 @@ CREATE SCHEMA pgmq;
 CREATE EXTENSION pgmq;
 ```
 
-### Then
+### Usage
+
+- With Postgresql
 
 ```dart
 // Create a database connection
@@ -45,6 +47,20 @@ final pgmq = await Pgmq.createConnection(param: databaseParam);
 // Create a queue [queueName]
 final queue = await pgmq.createQueue(queueName: queueName);
 ```
+
+- With Prisma
+
+```dart
+// Create a pgmq connection with PrismaClient
+final pgmq = Pgmq.createConnectionUsingPrisma(prismaClient: PrismaClient());
+```
+
+```dart
+// Create a queue [queueName]
+final queue = await pgmq.createQueue(queueName: queueName);
+```
+
+### Then
 
 ```dart
 // Send a message

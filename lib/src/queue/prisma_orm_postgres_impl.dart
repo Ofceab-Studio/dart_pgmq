@@ -1,6 +1,6 @@
 part of 'queue.dart';
 
-/// An implementation of the [Queue] abstract class with [prostgres] package
+/// An implementation of the [Queue] abstract class with [Prisma] client
 /// for managing message queues
 class _PrismaOrmPostgresImpl implements Queue {
   final String _queueName;

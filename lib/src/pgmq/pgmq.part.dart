@@ -33,10 +33,12 @@ class _Pgmp implements Pgmq {
   }
 }
 
-class _PgmpPrisma implements Pgmq {
+/// An implementation of the [Pgmq] abstract class for creating and managing
+/// a `postgresql` message queues with [Prisma].
+class _PgmqPrisma implements Pgmq {
   final BasePrismaClient prismaClient;
 
-  const _PgmpPrisma._({required this.prismaClient});
+  const _PgmqPrisma._({required this.prismaClient});
 
   @override
   Future<Queue> createQueue({required String queueName}) async {
