@@ -9,9 +9,9 @@ Initial version.
 
 ## 2.0.0
 
-- feat: Improve performance by using connection pool.
-- feat: Make `Queue` disposable.
 - feat: Use postgres as client for pgmq
+- feat: Improve performance by using connection pool.
+- fix: Make `Queue` disposable.
 - feat: Add cancellation on request execution.
-- feat: Add support of prisma as postgres database  client
+- feat: Support Prisma as postgres database  client
 - feat: Add fromJson and toJson on `Messsage`.
