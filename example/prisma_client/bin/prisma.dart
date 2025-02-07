@@ -1,23 +1,18 @@
 import 'dart:async';
-
 import 'package:dart_pgmq/dart_pgmq.dart';
 import 'package:prisma/generated/prisma_client/client.dart';
 
 Future<void> main() async {
   // Create a connexion
   final pgmq = Pgmq.createConnectionUsingPrisma(prismaClient: PrismaClient());
-  // final pgmq1 = await Pgmq.createConnection(param: databaseParam);
 
   runZonedGuarded(
     () async {
-      //  Create a queue
+      // Create a queue
       final queue = await pgmq.createQueue(queueName: 'queue');
       print(await queue.purgeQueue());
 
-      // final msg = await queue.read();
-      // if (msg?.isNotEmpty ?? false) {
-      //   await queue.delete(msg![0].messageID);
-      // }
+      // Start pulling
       final (pause, stream) =
           queue.pausablePull(duration: Duration(milliseconds: 500));
 

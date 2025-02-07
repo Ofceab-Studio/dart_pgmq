@@ -1,5 +1,6 @@
 import 'package:postgres/postgres.dart' as postgres;
 
+/// The [PoolConnectionOptions] class that contain options to be used as [PoolSettings].
 class PoolConnectionOptions {
   /// Minimum number of connections. When the pool is started this is the number of connections
   /// that will initially be started. The pool will ensure that this number of connections
@@ -23,6 +24,7 @@ class PoolConnectionOptions {
   /// Defaults to 30 seconds.
   Duration? establishTimeout;
 
+  // The maximum duration a connection is kept open.
   Duration? maxLifetime;
 
   Duration queryTimeout;

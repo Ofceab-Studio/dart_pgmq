@@ -52,7 +52,7 @@ abstract class Queue {
   Future<Message?> setVisibilityTimeout(
       {required int messageID, required Duration duration});
 
-  /// Disposes of any resources associated with the queue.
+  /// Dispose of any resources associated with the queue.
   Future<void> dispose();
 
   /// Continuously pulls messages from the queue for the specified duration.
@@ -61,6 +61,7 @@ abstract class Queue {
       Duration? visibilityDuration,
       bool useReadMethod = true});
 
+  // Continuously pulls messages from the queue using a repeating pausable timer for the specified duration.
   (PausableTimer, Stream<Message>) pausablePull(
       {required Duration duration,
       Duration? visibilityDuration,

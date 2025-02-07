@@ -18,3 +18,14 @@ class CreateManyUserAndReturnOutputType {
 
   Map<String, dynamic> toJson() => {'id': id};
 }
+
+class UpdateManyUserAndReturnOutputType {
+  const UpdateManyUserAndReturnOutputType({this.id});
+
+  factory UpdateManyUserAndReturnOutputType.fromJson(Map json) =>
+      UpdateManyUserAndReturnOutputType(id: json['id']);
+
+  final int? id;
+
+  Map<String, dynamic> toJson() => {'id': id};
+}

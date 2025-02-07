@@ -11,7 +11,7 @@ environment:
 dependencies:
   orm: ^5.2.1
   dart_pgmq:
-    path: ../../../
+    path: ../../
   # path: ^1.8.0
 
 dev_dependencies:

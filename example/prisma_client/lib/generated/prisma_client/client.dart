@@ -298,10 +298,12 @@ class UserDelegate {
             _i3.UserUncheckedUpdateManyInput>
         data,
     _i3.UserWhereInput? where,
+    int? limit,
   }) {
     final args = {
       'data': data,
       'where': where,
+      'limit': limit,
     };
     final query = _i1.serializeJsonQuery(
       args: args,
@@ -318,6 +320,40 @@ class UserDelegate {
       action: 'updateManyUser',
       result: result,
       factory: (e) => _i3.AffectedRowsOutput.fromJson(e),
+    );
+  }
+
+  _i1.ActionClient<Iterable<_i2.UpdateManyUserAndReturnOutputType>>
+      updateManyAndReturn({
+    required _i1.PrismaUnion<_i3.UserUpdateManyMutationInput,
+            _i3.UserUncheckedUpdateManyInput>
+        data,
+    _i3.UserWhereInput? where,
+    int? limit,
+    _i3.UpdateManyUserAndReturnOutputTypeSelect? select,
+  }) {
+    final args = {
+      'data': data,
+      'where': where,
+      'limit': limit,
+      'select': select,
+    };
+    final query = _i1.serializeJsonQuery(
+      args: args,
+      modelName: 'User',
+      action: _i1.JsonQueryAction.updateManyAndReturn,
+      datamodel: PrismaClient.datamodel,
+    );
+    final result = _client.$engine.request(
+      query,
+      headers: _client.$transaction.headers,
+      transaction: _client.$transaction.transaction,
+    );
+    return _i1.ActionClient<Iterable<_i2.UpdateManyUserAndReturnOutputType>>(
+      action: 'updateManyUserAndReturn',
+      result: result,
+      factory: (values) => (values as Iterable)
+          .map((e) => _i2.UpdateManyUserAndReturnOutputType.fromJson(e)),
     );
   }
 
@@ -379,9 +415,14 @@ class UserDelegate {
     );
   }
 
-  _i1.ActionClient<_i3.AffectedRowsOutput> deleteMany(
-      {_i3.UserWhereInput? where}) {
-    final args = {'where': where};
+  _i1.ActionClient<_i3.AffectedRowsOutput> deleteMany({
+    _i3.UserWhereInput? where,
+    int? limit,
+  }) {
+    final args = {
+      'where': where,
+      'limit': limit,
+    };
     final query = _i1.serializeJsonQuery(
       args: args,
       modelName: 'User',
@@ -558,11 +599,11 @@ class PrismaClient extends _i1.BasePrismaClient<PrismaClient> {
   @override
   get $engine => _engine ??= _i5.BinaryEngine(
         schema:
-            '// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "dart run orm"\n  output   = "../lib/generated/prisma_client"\n}\n\ndatasource db {\n  provider = "postgresql"\n  url      = env("DATABASE_URL")\n}\n\nmodel User {\n  id Int @id @default(autoincrement())\n}\n\n// model Contact {\n//   id    Int     @id @default(autoincrement())\n//   User User[]\n// }\n',
+            '// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = "dart run orm"\n  output   = "../lib/generated/prisma_client"\n}\n\ndatasource db {\n  provider = "postgresql"\n  url      = "postgres://postgres:postgres@0.0.0.0:5432/postgres"\n}\n\nmodel User {\n  id Int @id @default(autoincrement())\n}\n',
         datasources: const {
           'db': _i1.Datasource(
-            _i1.DatasourceType.environment,
-            'DATABASE_URL',
+            _i1.DatasourceType.url,
+            'postgres://postgres:postgres@0.0.0.0:5432/postgres',
           )
         },
         options: $options,
