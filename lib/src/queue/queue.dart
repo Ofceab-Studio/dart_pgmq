@@ -29,7 +29,7 @@ abstract class Queue {
   ///Read 1 (by default) or more messages from a queue. The [visibilityTimeOut] specifies the amount of time in seconds
   ///that the message will be invisible to other consumers after reading.
   Future<List<Message>?> read(
-      {int? maxReadNumber, Duration? visibilityTimeOut});
+      {int? maxReadNumber, Duration? visibilityTimeOut, conditional});
 
   /// Reads a single message from a queue and deletes it upon read.
   Future<Message?> pop();
