@@ -1,6 +1,6 @@
 name: dart_pgmq
 description: A dart client for Postgres Message Queue (PGMQ).
-version: 2.0.0
+version: 2.1.0
 repository: https://github.com/Ofceab-Studio/dart_pgmq
 issue_tracker: https://github.com/Ofceab-Studio/dart_pgmq/issues
 topics: [postgresql, message-queue, pgmq]
