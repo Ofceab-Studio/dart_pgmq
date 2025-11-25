@@ -1,3 +1,3 @@
-.dart_tool/
-.vscode
-*.lock
+# Files to exclude from pub.dev publishing
+.vscode/
+pubspec.lock

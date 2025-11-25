@@ -5,7 +5,7 @@ A dart client for Postgres Message Queue ([PGMQ](https://github.com/tembo-io/pgm
 
 ```bash
 # Start a Postgres instance
-docker run -d --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 quay.io/tembo/pg16-pgmq:latest
+docker run -d --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 ofceab/pgmq:pg18-1.9.0
 ```
 
 ```bash
