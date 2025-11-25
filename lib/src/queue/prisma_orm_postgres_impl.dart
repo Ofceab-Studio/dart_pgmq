@@ -85,21 +85,37 @@ class _PrismaOrmPostgresImpl implements Queue {
   Future<List<Message>?> read(
       {int? maxReadNumber,
       Duration? visibilityTimeOut,
+      Filter? conditional,
       Duration? timeout}) async {
     final vt = visibilityTimeOut ?? Duration(seconds: 10);
-    return _read(vt, maxReadNumber ?? 1);
+    return _read(vt, maxReadNumber ?? 1, conditional: conditional);
   }
 
   Future<List<Message>?> _read(
     Duration vt,
-    int maxReadNumber,
-  ) async {
-    final query =
-        "SELECT * FROM pgmq.read(\$1::TEXT,\$2::INTEGER,\$3::INTEGER);";
+    int maxReadNumber, {
+    Filter? conditional,
+  }) async {
+    String query;
+    List<Object> params;
+
+    if (conditional != null) {
+      query =
+          "SELECT * FROM pgmq.read(\$1::TEXT,\$2::INTEGER,\$3::INTEGER,\$4::jsonb);";
+      params = [
+        _queueName,
+        vt.inSeconds,
+        maxReadNumber,
+        conditional.toString()
+      ];
+    } else {
+      query = "SELECT * FROM pgmq.read(\$1::TEXT,\$2::INTEGER,\$3::INTEGER);";
+      params = [_queueName, vt.inSeconds, maxReadNumber];
+    }
+
     return ErrorCatcher.tryCatch(
       () async {
-        final result = await _prismaClient.$raw
-            .query(query, [_queueName, vt.inSeconds, maxReadNumber]);
+        final result = await _prismaClient.$raw.query(query, params);
 
         if (result.isEmpty) {
           return null;
@@ -107,6 +123,51 @@ class _PrismaOrmPostgresImpl implements Queue {
 
         return result
             .take(maxReadNumber)
+            .map((msg) => Message.fromJson(msg))
+            .toList();
+      },
+    );
+  }
+
+  @override
+  Future<List<Message>?> readWithPoll(
+      {int? maxReadNumber,
+      Duration? visibilityTimeOut,
+      Duration? pollInterval,
+      Filter? conditional,
+      Duration? timeout}) async {
+    final vt = visibilityTimeOut ?? Duration(seconds: 10);
+    final poll = pollInterval ?? Duration(seconds: 1);
+
+    String query;
+    List<Object> params;
+
+    if (conditional != null) {
+      query =
+          "SELECT * FROM pgmq.read_with_poll(\$1::TEXT,\$2::INTEGER,\$3::INTEGER,\$4::INTEGER,\$5::jsonb);";
+      params = [
+        _queueName,
+        vt.inSeconds,
+        maxReadNumber ?? 1,
+        poll.inSeconds,
+        conditional.toString()
+      ];
+    } else {
+      query =
+          "SELECT * FROM pgmq.read_with_poll(\$1::TEXT,\$2::INTEGER,\$3::INTEGER,\$4::INTEGER);";
+      params = [_queueName, vt.inSeconds, maxReadNumber ?? 1, poll.inSeconds];
+    }
+
+    return ErrorCatcher.tryCatch(
+      () async {
+        final result = await _prismaClient.$raw.query(query, params);
+
+        if (result.isEmpty) {
+          return null;
+        }
+
+        return result
+            .take(maxReadNumber ?? 1)
             .map((msg) => Message.fromJson(msg))
             .toList();
       },

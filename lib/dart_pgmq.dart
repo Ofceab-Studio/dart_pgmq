@@ -5,6 +5,7 @@
 // if you want to update your packages on power: dart pub upgrade --major-versions
 export 'package:dart_pgmq/src/message/message.dart';
 export 'package:dart_pgmq/src/queue/queue.dart';
+export 'package:dart_pgmq/src/filter/filter.dart';
 export 'package:dart_pgmq/src/pgmq/database_connection.dart';
 export 'package:dart_pgmq/src/pgmq/pgmq.dart';
 export 'package:dart_pgmq/src/exception/can_have_error.dart';

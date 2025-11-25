@@ -294,16 +294,6 @@ class UserUncheckedUpdateManyInput
   Map<String, dynamic> toJson() => {'id': id};
 }
 
-class UpdateManyUserAndReturnOutputTypeSelect
-    implements _i1.JsonConvertible<Map<String, dynamic>> {
-  const UpdateManyUserAndReturnOutputTypeSelect({this.id});
-
-  final bool? id;
-
-  @override
-  Map<String, dynamic> toJson() => {'id': id};
-}
-
 class UserCountAggregateOutputType {
   const UserCountAggregateOutputType({
     this.id,

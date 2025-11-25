@@ -147,25 +147,36 @@ class _QueuePostgresImpl implements Queue {
   Future<List<Message>?> read(
       {int? maxReadNumber,
       Duration? visibilityTimeOut,
+      Filter? conditional,
       Duration? timeout}) async {
     final vt = visibilityTimeOut ?? Duration(seconds: 10);
-    return _read(vt, maxReadNumber ?? 1);
+    return _read(vt, maxReadNumber ?? 1,
+        conditional: conditional, timeout: timeout);
   }
 
   Future<List<Message>?> _read(Duration vt, int maxReadNumber,
-      {Duration? timeout}) async {
-    final query = "SELECT * FROM pgmq.read(@queue,@vt,@maxReadNumber);";
+      {Filter? conditional, Duration? timeout}) async {
+    String query;
+    Map<String, dynamic> parameters = {
+      'queue': _queueName,
+      'vt': vt.inSeconds,
+      'maxReadNumber': maxReadNumber
+    };
+
+    if (conditional != null) {
+      query =
+          "SELECT * FROM pgmq.read(@queue,@vt,@maxReadNumber,@conditional::jsonb);";
+      parameters['conditional'] = conditional.toString();
+    } else {
+      query = "SELECT * FROM pgmq.read(@queue,@vt,@maxReadNumber);";
+    }
+
     return ErrorCatcher.tryCatch(
       () async {
         final result = await _connection.withConnection(
           (connection) async {
-            final result = await _withCancellation(
-                connection,
-                (cx) => cx.execute(Sql.named(query), parameters: {
-                      'queue': _queueName,
-                      'vt': vt.inSeconds,
-                      'maxReadNumber': maxReadNumber
-                    }),
+            final result = await _withCancellation(connection,
+                (cx) => cx.execute(Sql.named(query), parameters: parameters),
                 timeout: timeout);
             return result;
           },
@@ -177,6 +188,56 @@ class _QueuePostgresImpl implements Queue {
 
         return result
             .take(maxReadNumber)
+            .map((msg) => Message.fromJson(msg.toColumnMap()))
+            .toList();
+      },
+    );
+  }
+
+  @override
+  Future<List<Message>?> readWithPoll(
+      {int? maxReadNumber,
+      Duration? visibilityTimeOut,
+      Duration? pollInterval,
+      Filter? conditional,
+      Duration? timeout}) async {
+    final vt = visibilityTimeOut ?? Duration(seconds: 10);
+    final poll = pollInterval ?? Duration(seconds: 1);
+
+    String query;
+    Map<String, dynamic> parameters = {
+      'queue': _queueName,
+      'vt': vt.inSeconds,
+      'maxReadNumber': maxReadNumber ?? 1,
+      'pollInterval': poll.inSeconds
+    };
+
+    if (conditional != null) {
+      query =
+          "SELECT * FROM pgmq.read_with_poll(@queue,@vt,@maxReadNumber,@pollInterval,@conditional::jsonb);";
+      parameters['conditional'] = conditional.toString();
+    } else {
+      query =
+          "SELECT * FROM pgmq.read_with_poll(@queue,@vt,@maxReadNumber,@pollInterval);";
+    }
+
+    return ErrorCatcher.tryCatch(
+      () async {
+        final result = await _connection.withConnection(
+          (connection) async {
+            final result = await _withCancellation(connection,
+                (cx) => cx.execute(Sql.named(query), parameters: parameters),
+                timeout: timeout);
+            return result;
+          },
+        );
+
+        if (result == null) {
+          return null;
+        }
+
+        return result
+            .take(maxReadNumber ?? 1)
             .map((msg) => Message.fromJson(msg.toColumnMap()))
             .toList();
       },

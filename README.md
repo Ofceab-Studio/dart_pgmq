@@ -73,6 +73,44 @@ queue.read(visibilityTimeOut: vt);
 ```
 
 ```dart
+// Read messages with advanced JSON filter using the Filter API
+// Example: Filter messages where user.age > 30
+queue.read(
+  visibilityTimeOut: vt,
+  maxReadNumber: 10,
+  conditional: Filter.gt('user.age', 30)
+);
+```
+
+```dart
+// More filter examples
+// Equality filter
+queue.read(conditional: Filter.eq('status', 'pending'));
+
+// Greater than or equal
+queue.read(conditional: Filter.gte('score', 80));
+
+// Less than
+queue.read(conditional: Filter.lt('age', 65));
+
+// Not equal
+queue.read(conditional: Filter.ne('type', 'archived'));
+
+// Check if field exists
+queue.read(conditional: Filter.exists('priority'));
+```
+
+```dart
+// Read messages with polling and conditional filter
+queue.readWithPoll(
+  visibilityTimeOut: vt,
+  maxReadNumber: 10,
+  pollInterval: Duration(seconds: 1),
+  conditional: Filter.eq('status', 'pending')
+);
+```
+
+```dart
 // Archive a message [messageID]
 queue.archive(messageID);
 ```
@@ -120,8 +158,8 @@ queue.dropQueue();
   - [x] [send](https://tembo-io.github.io/pgmq/api/sql/functions/#send)
   - [ ] [send_batch](https://tembo-io.github.io/pgmq/api/sql/functions/#send_batch)
 - [ ] [Reading Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#reading-messages)
-  - [x] [read](https://tembo-io.github.io/pgmq/api/sql/functions/#read)
-  - [ ] [read_with_poll](https://tembo-io.github.io/pgmq/api/sql/functions/#read_with_poll)
+  - [x] [read](https://tembo-io.github.io/pgmq/api/sql/functions/#read) (with advanced JSON filter support)
+  - [x] [read_with_poll](https://tembo-io.github.io/pgmq/api/sql/functions/#read_with_poll) (with advanced JSON filter support)
   - [x] [pop](https://tembo-io.github.io/pgmq/api/sql/functions/#pop)
 - [ ] [Deleting/Archiving Messages](https://tembo-io.github.io/pgmq/api/sql/functions/#deletingarchiving-messages)
   - [x] [delete (single)](https://tembo-io.github.io/pgmq/api/sql/functions/#delete-single)

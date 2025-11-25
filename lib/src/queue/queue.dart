@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:dart_pgmq/src/exception/error_catcher.dart';
+import 'package:dart_pgmq/src/filter/filter.dart';
 import 'package:dart_pgmq/src/message/message.dart';
 import 'package:orm/orm.dart';
 import 'package:pausable_timer/pausable_timer.dart';
@@ -28,8 +29,19 @@ abstract class Queue {
 
   ///Read 1 (by default) or more messages from a queue. The [visibilityTimeOut] specifies the amount of time in seconds
   ///that the message will be invisible to other consumers after reading.
+  ///[conditional] is an optional [Filter] for advanced JSON filtering.
+  ///Example: Filter.gt('user.age', 30) or Filter.eq('status', 'pending')
   Future<List<Message>?> read(
-      {int? maxReadNumber, Duration? visibilityTimeOut});
+      {int? maxReadNumber, Duration? visibilityTimeOut, Filter? conditional});
+
+  /// Reads messages from a queue with polling. Similar to [read] but with built-in polling support.
+  /// [conditional] is an optional [Filter] for advanced JSON filtering.
+  /// Example: Filter.eq('status', 'pending')
+  Future<List<Message>?> readWithPoll(
+      {int? maxReadNumber,
+      Duration? visibilityTimeOut,
+      Duration? pollInterval,
+      Filter? conditional});
 
   /// Reads a single message from a queue and deletes it upon read.
   Future<Message?> pop();
